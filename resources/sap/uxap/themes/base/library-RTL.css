@@ -145,20 +145,16 @@ Common Compact/Cozy
   top: 0;
   z-index: 1;
 }
-.sapMSplitContainerHideMode .sapMSplitContainerDetail .sapUxAPAnchorBar.sapUxAPAnchorBarScrollLeft .anchorBarArrowLeft,
-html[dir=rtl] .sapMSplitContainerHideMode .sapMSplitContainerDetail .sapUxAPAnchorBar.sapUxAPAnchorBarScrollRight .anchorBarArrowRight {
+.sapMSplitContainerHideMode .sapMSplitContainerDetail .sapUxAPAnchorBar.sapUxAPAnchorBarScrollLeft .anchorBarArrowLeft {
   right: 1rem;
 }
-.sapMSplitContainerHideMode .sapMSplitContainerDetail .sapUxAPAnchorBar.sapUxAPAnchorBarScrollRight .anchorBarArrowRight,
-html[dir=rtl] .sapMSplitContainerHideMode .sapMSplitContainerDetail .sapUxAPAnchorBar.sapUxAPAnchorBarScrollLeft .anchorBarArrowLeft {
+.sapMSplitContainerHideMode .sapMSplitContainerDetail .sapUxAPAnchorBar.sapUxAPAnchorBarScrollRight .anchorBarArrowRight {
   left: 3rem;
 }
-.sapMSplitContainerDetail .sapUxAPAnchorBar.sapUxAPAnchorBarScrollLeft .anchorBarArrowLeft,
-html[dir=rtl] .sapMSplitContainerDetail .sapUxAPAnchorBar.sapUxAPAnchorBarScrollRight .anchorBarArrowRight {
+.sapMSplitContainerDetail .sapUxAPAnchorBar.sapUxAPAnchorBarScrollLeft .anchorBarArrowLeft {
   right: 0.5rem;
 }
-.sapMSplitContainerDetail .sapUxAPAnchorBar.sapUxAPAnchorBarScrollRight .anchorBarArrowRight,
-html[dir=rtl] .sapMSplitContainerDetail .sapUxAPAnchorBar.sapUxAPAnchorBarScrollLeft .anchorBarArrowLeft {
+.sapMSplitContainerDetail .sapUxAPAnchorBar.sapUxAPAnchorBarScrollRight .anchorBarArrowRight {
   left: 2.5rem;
 }
 .sapUiMedia-Std-Tablet .sapUxAPAnchorBar.sapUxAPAnchorBarScrollLeft .anchorBarArrowLeft {
@@ -298,6 +294,7 @@ Compact
 }
 .sapUxAPBreadCrumbs {
   margin: 0 0 0.5rem 0;
+  height: 1.25rem;
 }
 .sapUxAPBreadCrumbs .sapMLnk,
 .sapUxAPBreadCrumbs .sapMText,
@@ -308,14 +305,17 @@ Compact
 .sapUxAPBreadCrumbs .sapMSlt {
   border: 0;
   margin: 0;
+  height: 1.25rem;
 }
 .sapUxAPBreadCrumbs .sapMSlt .sapMSltArrow {
   margin-left: -0.5rem;
   background-color: transparent;
+  line-height: 1.25rem;
 }
 .sapUxAPBreadCrumbs .sapMSlt .sapMSltLabel {
   padding-right: 0;
   padding-left: 1.5rem;
+  line-height: 1.25rem;
 }
 .sapUxAPBreadCrumbs .sapMSltHoverable:hover:not(.sapMSltPressed) > .sapMSltArrow {
   background-color: transparent;
@@ -408,6 +408,7 @@ Compact
 .sapUiMedia-Std-Desktop .sapUxAPHierarchicalSelect.sapMSltIconOnly {
   position: absolute;
   left: 0;
+  top: 0;
   height: 3rem;
 }
 /* inner list */
@@ -1067,10 +1068,6 @@ body > .sapUxAPObjectPageLayout,
   right: 0;
   left: auto;
   z-index: 3000;
-}
-html[dir=rtl] .sapUxAPObjectChildPage {
-  left: 0;
-  right: auto;
 }
 .sapUxAPObjectPageSection {
   margin-right: 0;

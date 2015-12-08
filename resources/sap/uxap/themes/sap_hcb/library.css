@@ -150,20 +150,16 @@ Common Compact/Cozy
   top: 0;
   z-index: 1;
 }
-.sapMSplitContainerHideMode .sapMSplitContainerDetail .sapUxAPAnchorBar.sapUxAPAnchorBarScrollLeft .anchorBarArrowLeft,
-html[dir=rtl] .sapMSplitContainerHideMode .sapMSplitContainerDetail .sapUxAPAnchorBar.sapUxAPAnchorBarScrollRight .anchorBarArrowRight {
+.sapMSplitContainerHideMode .sapMSplitContainerDetail .sapUxAPAnchorBar.sapUxAPAnchorBarScrollLeft .anchorBarArrowLeft {
   left: 1rem;
 }
-.sapMSplitContainerHideMode .sapMSplitContainerDetail .sapUxAPAnchorBar.sapUxAPAnchorBarScrollRight .anchorBarArrowRight,
-html[dir=rtl] .sapMSplitContainerHideMode .sapMSplitContainerDetail .sapUxAPAnchorBar.sapUxAPAnchorBarScrollLeft .anchorBarArrowLeft {
+.sapMSplitContainerHideMode .sapMSplitContainerDetail .sapUxAPAnchorBar.sapUxAPAnchorBarScrollRight .anchorBarArrowRight {
   right: 3rem;
 }
-.sapMSplitContainerDetail .sapUxAPAnchorBar.sapUxAPAnchorBarScrollLeft .anchorBarArrowLeft,
-html[dir=rtl] .sapMSplitContainerDetail .sapUxAPAnchorBar.sapUxAPAnchorBarScrollRight .anchorBarArrowRight {
+.sapMSplitContainerDetail .sapUxAPAnchorBar.sapUxAPAnchorBarScrollLeft .anchorBarArrowLeft {
   left: 0.5rem;
 }
-.sapMSplitContainerDetail .sapUxAPAnchorBar.sapUxAPAnchorBarScrollRight .anchorBarArrowRight,
-html[dir=rtl] .sapMSplitContainerDetail .sapUxAPAnchorBar.sapUxAPAnchorBarScrollLeft .anchorBarArrowLeft {
+.sapMSplitContainerDetail .sapUxAPAnchorBar.sapUxAPAnchorBarScrollRight .anchorBarArrowRight {
   right: 2.5rem;
 }
 .sapUiMedia-Std-Tablet .sapUxAPAnchorBar.sapUxAPAnchorBarScrollLeft .anchorBarArrowLeft {
@@ -303,6 +299,7 @@ Compact
 }
 .sapUxAPBreadCrumbs {
   margin: 0 0 0.5rem 0;
+  height: 1.25rem;
 }
 .sapUxAPBreadCrumbs .sapMLnk,
 .sapUxAPBreadCrumbs .sapMText,
@@ -313,14 +310,17 @@ Compact
 .sapUxAPBreadCrumbs .sapMSlt {
   border: 0;
   margin: 0;
+  height: 1.25rem;
 }
 .sapUxAPBreadCrumbs .sapMSlt .sapMSltArrow {
   margin-right: -0.5rem;
   background-color: transparent;
+  line-height: 1.25rem;
 }
 .sapUxAPBreadCrumbs .sapMSlt .sapMSltLabel {
   padding-left: 0;
   padding-right: 1.5rem;
+  line-height: 1.25rem;
 }
 .sapUxAPBreadCrumbs .sapMSltHoverable:hover:not(.sapMSltPressed) > .sapMSltArrow {
   background-color: transparent;
@@ -413,6 +413,7 @@ Compact
 .sapUiMedia-Std-Desktop .sapUxAPHierarchicalSelect.sapMSltIconOnly {
   position: absolute;
   right: 0;
+  top: 0;
   height: 3rem;
 }
 /* inner list */
@@ -1073,10 +1074,6 @@ body > .sapUxAPObjectPageLayout,
   right: auto;
   z-index: 3000;
 }
-html[dir=rtl] .sapUxAPObjectChildPage {
-  right: 0;
-  left: auto;
-}
 .sapUxAPObjectPageSection {
   margin-left: 0;
   margin-bottom: 0;
@@ -1268,6 +1265,7 @@ html[dir=rtl] .sapUxAPObjectChildPage {
 /* Calendar Legend */
 .sapUxAPAnchorBar {
   background-color: #000000;
+  border-bottom-width: 0.125rem;
 }
 .sapUxAPAnchorBar .sapUxAPAnchorBarButton,
 .sapUxAPAnchorBar .sapUxAPAnchorBarButton .sapMBtnInner {
@@ -1293,9 +1291,10 @@ html[dir=rtl] .sapUxAPObjectChildPage {
   content: "";
   position: absolute;
   background-color: #ffffff;
-  height: 0.375rem;
+  height: 0.25rem;
   bottom: 0;
-  width: 100%;
+  left: 1rem;
+  right: 1rem;
 }
 .sapUiSizeCompact.sapUxAPAnchorBarPopover.sapMPopover .sapMBtn.sapUxAPAnchorBarButton .sapMBtnInner .sapMBtnContent {
   line-height: 1.8rem;
@@ -1396,7 +1395,7 @@ html[data-sap-ui-browser^="ie"] .sapUxAPAnchorBar.sapUxAPAnchorBarOverflow .sapU
 .sapUiMedia-Std-Phone .sapUiSizeCompact .sapUxAPHierarchicalSelect .sapMSltArrow {
   width: 3rem;
 }
-.sapUiMedia-Std-Phone .sapUxAPHierarchicalSelect {
+.sapUiMedia-Std-Phone .sapUxAPHierarchicalSelect > .sapMSltArrow {
   border-left: none;
 }
 .sapUxAPAnchorBar .sapUxAPHierarchicalSelect.sapMSltIconOnly {
