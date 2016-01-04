@@ -1,6 +1,6 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2015 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2016 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -97,7 +97,8 @@ sap.ui.define([
 	 */
 
 	ObjectPageSection.prototype.onkeyup = function (oEvent) {
-		if (oEvent.keyCode === jQuery.sap.KeyCodes.TAB && this._getObjectPageLayout()._isFirstSection(this)) {
+		var eventTarget = sap.ui.getCore().byId(jQuery(oEvent.target).attr("id"));
+		if (oEvent.keyCode === jQuery.sap.KeyCodes.TAB && eventTarget instanceof sap.uxap.ObjectPageSection && this._getObjectPageLayout()._isFirstSection(this)) {
 			this._getObjectPageLayout().$("opwrapper").scrollTop(0);
 		}
 	};

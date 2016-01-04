@@ -1,6 +1,6 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2015 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2016 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -1029,7 +1029,7 @@ sap.ui.define([
 			scrollLeft: this._iMaxPosition,
 			width: iWidth
 		};
-		
+
 		this._iMaxPosition += iWidth;
 	};
 
@@ -1050,8 +1050,8 @@ sap.ui.define([
 			 // Reverse all positions as the scroll 0 is at the far end (first item = maxPosition, last item = 0)
 			oSectionInfo.scrollLeft = this._iMaxPosition - oSectionInfo.scrollLeft - oSectionInfo.width;
 		}
-	
-		
+
+
 	};
 
 	/**
