@@ -625,6 +625,9 @@ html[data-sap-ui-browser^=ie] .sapUxAPObjectPageHeaderObjectImageContainerSub > 
 .sapUxAPObjectPageHeaderTitleTextWrappable {
   white-space: normal;
 }
+.sapUiMedia-Std-Phone .sapUxAPObjectPageHeaderTitleTextWrappable {
+  word-break: break-all;
+}
 .sapUxAPObjectPageHeaderIdentifierTitle .sapMObjStatusMarker {
   font-family: SAP-icons;
   font-size: 1rem;
@@ -685,11 +688,16 @@ html[dir=rtl] .sapUxAPObjectPageHeaderPlaceholder.sapUxAPObjectPageHeaderObjectI
 .sapUxAPObjectPageHeaderTitleFollowArrow ~ .sapUxAPObjectPageHeaderIdentifierSubTitleInContent {
   margin-top: -0.625rem;
 }
-.sapUxAPObjectPageHeaderNowrap {
+.sapUxAPObjectPageHeaderNowrapMarkers {
   white-space: nowrap;
+}
+.sapUiMedia-Std-Phone .sapUxAPObjectPageHeaderNowrapMarkers {
+  white-space: normal;
+  word-break: break-all;
 }
 .sapUxAPObjectPageHeaderChangesBtn,
 .sapUxAPObjectPageHeaderLockBtn {
+  white-space: nowrap;
   margin-left: 0.125rem;
 }
 html[dir=rtl] .sapUxAPObjectPageHeaderChangesBtn,
@@ -723,12 +731,15 @@ objectPageHeader Content
 .sapUxAPObjectPageHeaderContent {
   position: relative;
 }
-.sapUxAPObjectPageHeaderContent div.sapUxAPObjectPageHeaderContentItem {
+.sapUxAPObjectPageHeaderContent .sapUxAPObjectPageHeaderContentItem {
   display: inline-block;
   vertical-align: top;
   margin-right: 2rem;
   margin-bottom: 1rem;
   line-height: 1.5rem;
+}
+.sapUxAPObjectPageHeaderContent .sapUxAPObjectPageHeaderContentItem.sapUiRespGrid {
+  display: inherit;
 }
 .sapUxAPObjectPageHeaderContent .sapUxAPObjectPageHeaderSeparatorContainer {
   position: relative;
@@ -867,6 +878,9 @@ objectPageHeader Content
 .sapUiMedia-Std-Tablet .sapUxAPObjectPageHeaderContent .sapUxAPObjectPageHeaderLayoutHiddenM,
 .sapUiMedia-Std-Phone .sapUxAPObjectPageHeaderContent .sapUxAPObjectPageHeaderLayoutHiddenS {
   display: none;
+}
+html[data-sap-ui-browser^='ie'] .sapUxAPObjectPageHeaderContent div.sapUxAPObjectPageHeaderContentItem {
+  vertical-align: top;
 }
 .sapUiMedia-Std-Phone .sapUxAPObjectPageHeaderContent {
   padding-left: 1rem;
@@ -1216,14 +1230,6 @@ body > .sapUxAPObjectPageLayout,
   width: 100%;
 }
 .sapUxAPObjectPageSubSectionHeader.titleOnLeftLayout .sapUxAPObjectPageSubSectionHeaderActions > .sapMBtn:first-child {
-  margin-left: 0;
-}
-/*
-    try to keep alignment with title inside of the block Container (first grid item and breaking grid items have neither padding-left nor margin-left)
-    this is only working since have absolute control on the grid items layout
-*/
-.sapUxAPBlockContainer > .sapUiRespGrid {
-  padding-left: 0;
   margin-left: 0;
 }
 /* Global CSS for 'sap_hcb' theme */
