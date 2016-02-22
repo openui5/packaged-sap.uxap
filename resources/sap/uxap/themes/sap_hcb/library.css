@@ -112,7 +112,7 @@ Common Compact/Cozy
 }
 .sapUxAPAnchorBar .sapUxAPAnchorBarButton .sapMBtnInner .sapMBtnContent,
 .sapUxAPAnchorBar .sapUxAPAnchorBarButton .sapMBtnInner .sapMBtnIcon {
-  height: 2.7rem;
+  height: 2.8rem;
   line-height: 3rem;
 }
 .sapUxAPAnchorBar .sapMBarChild {
@@ -262,8 +262,17 @@ Compact
   padding: 0.25rem 0 0 0;
 }
 .sapUiSizeCompact .sapUxAPAnchorBarButton .sapMBtnInner {
-  padding-top: 1px;
   padding-bottom: 1px;
+}
+.sapUiSizeCompact .sapUxAPAnchorBar.sapUxAPAnchorBarScrollLeft .anchorBarArrow .sapMBtnIcon,
+.sapUiSizeCompact .sapUxAPAnchorBar.sapUxAPAnchorBarScrollRight .anchorBarArrow .sapMBtnIcon {
+  margin-left: 0rem;
+  margin-right: 0rem;
+}
+.sapUiSizeCompact .sapUxAPAnchorBar .sapUxAPAnchorBarButton .sapMBtnInner .sapMBtnContent,
+.sapUiSizeCompact .sapUxAPAnchorBar .sapUxAPAnchorBarButton .sapMBtnInner .sapMBtnIcon {
+  height: 2.55rem;
+  line-height: 2.6rem;
 }
 .sapUiSizeCompact .sapUxAPAnchorBar .sapUxAPAnchorBarButton .sapMBtnInner.sapMBtnIconLast {
   padding-right: 0;
@@ -879,6 +888,9 @@ objectPageHeader Content
 .sapUiMedia-Std-Phone .sapUxAPObjectPageHeaderContent .sapUxAPObjectPageHeaderLayoutHiddenS {
   display: none;
 }
+.sapUxAPObjectPageHeaderContentItem .sapUiForm {
+  line-height: 1.5;
+}
 html[data-sap-ui-browser^='ie'] .sapUxAPObjectPageHeaderContent div.sapUxAPObjectPageHeaderContentItem {
   vertical-align: top;
 }
@@ -1044,6 +1056,9 @@ body > .sapUxAPObjectPageLayout,
 }
 .sapUxAPObjectPageScroll {
   position: relative;
+}
+.sapUxAPObjectPageContainer .sapUiForm {
+  line-height: 1.5;
 }
 .sapUxAPObjectPageContainerNoBar > .sapUxAPObjectPageSection:first-child {
   margin-top: 0;
@@ -1311,6 +1326,10 @@ body > .sapUxAPObjectPageLayout,
 }
 .sapUiSizeCompact.sapUxAPAnchorBarPopover.sapMPopover .sapMBtn.sapUxAPAnchorBarButton .sapMBtnInner .sapMBtnContent {
   line-height: 1.8rem;
+}
+.sapUxAPAnchorBar .sapUxAPAnchorBarButton .sapMBtnInner .sapMBtnContent,
+.sapUxAPAnchorBar .sapUxAPAnchorBarButton .sapMBtnInner .sapMBtnIcon {
+  line-height: 2rem;
 }
 /***********************/
 /* BEGIN Scroll Arrows */
