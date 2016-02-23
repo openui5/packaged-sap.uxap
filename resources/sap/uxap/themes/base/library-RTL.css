@@ -875,6 +875,9 @@ objectPageHeader Content
 .sapUiMedia-Std-Phone .sapUxAPObjectPageHeaderContent .sapUxAPObjectPageHeaderLayoutHiddenS {
   display: none;
 }
+.sapUxAPObjectPageHeaderContentItem .sapUiForm {
+  line-height: 1.5;
+}
 html[data-sap-ui-browser^='ie'] .sapUxAPObjectPageHeaderContent div.sapUxAPObjectPageHeaderContentItem {
   vertical-align: top;
 }
@@ -1038,6 +1041,9 @@ body > .sapUxAPObjectPageLayout,
 }
 .sapUxAPObjectPageScroll {
   position: relative;
+}
+.sapUxAPObjectPageContainer .sapUiForm {
+  line-height: 1.5;
 }
 .sapUxAPObjectPageContainerNoBar > .sapUxAPObjectPageSection:first-child {
   margin-top: 0;
@@ -1219,4 +1225,9 @@ body > .sapUxAPObjectPageLayout,
 }
 .sapUxAPObjectPageSubSectionHeader.titleOnLeftLayout .sapUxAPObjectPageSubSectionHeaderActions > .sapMBtn:first-child {
   margin-right: 0;
+}
+/* remove the padding of form content, since form itself is already in a grid-cell that provides the required extra spacing */
+.sapUxAPBlockContainer .sapUiFormResGrid > div {
+  padding-right: 0;
+  padding-top: 0;
 }
