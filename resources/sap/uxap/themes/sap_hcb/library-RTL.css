@@ -912,9 +912,6 @@ html[data-sap-ui-browser^='ie'] .sapUxAPObjectPageHeaderContent div.sapUxAPObjec
 .sapUxAPObjectPageHeaderDetailsDesign-Dark .sapUxAPObjectPageHeaderSeparatorContainer .sapUxAPObjectPageHeaderSeparatorAfter {
   background-color: transparent;
 }
-.sapUxAPObjectPageHeaderContentImageContainer {
-  float: right;
-}
 .sapUxAPObjectPageHeaderContentImageContainer .sapUiIcon,
 .sapUxAPObjectPageHeaderContentImageContainer .sapMImg {
   margin: 0 0 0.5rem 1rem;
