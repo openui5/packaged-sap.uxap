@@ -1031,6 +1031,9 @@ body > .sapUxAPObjectPageLayout,
   left: 0;
   z-index: 2;
 }
+.sapUxAPObjectPageSubSectionPromoted:not(:first-of-type) {
+  padding-top: 0.25rem;
+}
 .sapUxAPObjectPageWrapper {
   position: absolute;
   top: 0;
@@ -1253,50 +1256,9 @@ body > .sapUxAPObjectPageLayout,
   height: 2rem;
   line-height: 2rem;
 }
+/* ============================== */
 /* Global CSS for 'sap_hcb' theme */
-/* Background Colors */
-/* Foreground Colors */
-/* Semantic Colors */
-/* Shadow Color */
-/* StandardListItem */
-/* ==================================== */
-/* Font styling                         */
-/* ==================================== */
-/* ==================================== */
-/* Chart Colors                         */
-/* ==================================== */
-/* Semantic Chart Colors */
-/* Note Explicit UX decision not to derive from @sapUiCritical, ... */
-/* Accent Chart Colors */
-/* Sequential Chart Colors */
-/* Derived Chart Colors */
-/* Shell */
-/* NotificationBar */
-/* ToolPopup */
-/* RatingIndicator */
-/* DateTimeInput Custom Picker JavaScript	  */
-/* mixed, scroller, clickpick */
-/* mixed, scroller, clickpick */
-/* modal, bubble, bottom, top */
-/* modal, bubble, bottom, top */
-/* Toolbar Separator */
-/* ------------------------------------------------------------------- */
-/* Generic Mapping: not for usage in standard control development !!!! */
-/* ------------------------------------------------------------------- */
-/* Semantic Text Colors */
-/* Semantic Element Colors */
-/* Semantic Backgrounds */
-/* Background Brand */
-/* Text Colors */
-/* Border Colors */
-/* @sapUiLightBorder: @sapHCStandardFG; */
-/* @sapUiExtraLightBorder: @sapHCStandardFG; */
-/* Accent */
-/* Backgrounds Header/Footer */
-/* Background */
-/* SAP.ME */
-/* OverlapCalendar Event Type */
-/* Calendar Legend */
+/* ============================== */
 .sapUxAPAnchorBar {
   background-color: #000000;
   border-bottom-width: 0.125rem;
@@ -1442,7 +1404,7 @@ html[data-sap-ui-browser^="ed"] .sapUxAPAnchorBar.sapUxAPAnchorBarOverflow .sapU
 .sapUxAPHierarchicalSelect .sapMSltLabel,
 .sapUxAPHierarchicalSelect .sapMSltArrow,
 .sapUxAPHierarchicalSelectFirstLevel.sapMSelectListItem {
-  color: #000000;
+  color: #ffffff;
 }
 .sapUiMedia-Std-Phone .sapUxAPHierarchicalSelect .sapMSltArrow,
 .sapUiMedia-Std-Phone .sapUiSizeCompact .sapUxAPHierarchicalSelect .sapMSltArrow {
