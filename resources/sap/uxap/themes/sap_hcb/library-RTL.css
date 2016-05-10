@@ -1024,7 +1024,7 @@ body > .sapUxAPObjectPageLayout,
   left: 0;
   z-index: 2;
 }
-.sapUxAPObjectPageSubSectionPromoted {
+.sapUxAPObjectPageSubSectionPromoted:not(:first-of-type) {
   padding-top: 0.25rem;
 }
 .sapUxAPObjectPageWrapper {
