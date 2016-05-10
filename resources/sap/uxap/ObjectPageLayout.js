@@ -715,15 +715,28 @@ sap.ui.define([
 		//in case we have added a section or subSection which change the ux rules
 		jQuery.sap.log.debug("ObjectPageLayout :: _adjustLayout", "refreshing ux rules");
 
-		var sSelectedSectionId = this._getSelectedSectionId(); //obtain the currently selected section in the navBar before navBar is destroyed
+		/* obtain the currently selected section in the navBar before navBar is destroyed,
+		 in order to reselect that section after that navBar is reconstructed */
+		var sSelectedSectionId = this._getSelectedSectionId();
 
 		this._applyUxRules(true);
 
-		this._setSelectedSectionId(sSelectedSectionId); //reselect the current section in the navBar
+		var oSelectedSection = sap.ui.getCore().byId(sSelectedSectionId);
 
-		this._adjustLayout(null, false, true /* requires a check on lazy loading */);
+		/* check if the section that was previously selected is still available,
+		   as it might have been deleted, or emptied, or set to hidden in the previous step */
+		if (oSelectedSection && oSelectedSection.getVisible() && oSelectedSection._getInternalVisible()) {
+			this._setSelectedSectionId(sSelectedSectionId); //reselect the current section in the navBar
+			this._adjustLayout(null, false, true /* requires a check on lazy loading */);
+			return;
+		}
+		/* the section that was previously selected is not available anymore, so we cannot reselect it;
+		   in that case we have to select the first visible section instead */
+		oSelectedSection = this._oFirstVisibleSection;
+		if (oSelectedSection) {
+			this.scrollToSection(oSelectedSection.getId());
+		}
 	};
-
 
 	ObjectPageLayout.prototype._getSelectedSectionId = function () {
 
@@ -986,7 +999,8 @@ sap.ui.define([
 		this._aSectionBases.forEach(function (oSectionBase) {
 			var oInfo = this._oSectionInfo[oSectionBase.getId()],
 				$this = oSectionBase.$(),
-				$mobileAnchor;
+				$mobileAnchor,
+				bPromoted = false;
 
 			if (!oInfo /* sectionBase is visible */ || !$this.length) {
 				return;
@@ -1015,13 +1029,17 @@ sap.ui.define([
 				$mobileAnchor = oSectionBase.$("headerTitle");
 			}
 
+			bPromoted = $mobileAnchor.length === 0;
+
 			//calculate the mobile position
-			if ($mobileAnchor.length > 0) {
+			if (!bPromoted) {
 				oInfo.positionTopMobile = Math.ceil($mobileAnchor.position().top) + $mobileAnchor.outerHeight() - this.iAnchorBarHeight - iHeaderGap;
 			} else {
 				//title wasn't found (=first section, hidden title, promoted subsection), scroll to the same position as desktop
 				oInfo.positionTopMobile = oInfo.positionTop;
 			}
+
+			oInfo.sectionReference.toggleStyleClass("sapUxAPObjectPageSubSectionPromoted", bPromoted);
 
 			//for calculating the currently scrolled section of subsection (and for lazy loading) we also need to know the bottom of the section and subsections
 			//we can't use oInfo.$dom.height() since the margin are not taken into account.

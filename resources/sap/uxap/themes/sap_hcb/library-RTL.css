@@ -302,10 +302,6 @@ Compact
 .sapUxAPBlockBase .sapUiFormTitle {
   font-size: 1.125rem;
 }
-/* adding padding to view to compensate 0 horizontal space between grid cells */
-.sapUxAPBlockBase .sapUiView {
-  padding-right: 1rem;
-}
 .sapUxAPBreadCrumbs {
   margin: 0 0 0.5rem 0;
   height: 1.25rem;
@@ -1031,6 +1027,9 @@ body > .sapUxAPObjectPageLayout,
   right: 0;
   left: 0;
   z-index: 2;
+}
+.sapUxAPObjectPageSubSectionPromoted:not(:first-of-type) {
+  padding-top: 0.25rem;
 }
 .sapUxAPObjectPageWrapper {
   position: absolute;
