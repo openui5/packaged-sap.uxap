@@ -31,6 +31,7 @@ sap.ui.define(function () {
 		if (oControl.getShowTitle() && oControl._getInternalTitleVisible()) {
 			oRm.write("<div");
 			oRm.writeAttribute("role", "heading");
+			oRm.writeAttribute("aria-level", "3");
 			oRm.writeAttributeEscaped("id", oControl.getId() + "-header");
 			oRm.addClass("sapUxAPObjectPageSectionHeader");
 			oRm.writeClasses();
