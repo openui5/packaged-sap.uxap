@@ -857,7 +857,10 @@ sap.ui.define([
 		 in that case we have to select the first visible section instead */
 		oSelectedSection = this._oFirstVisibleSection;
 		if (oSelectedSection) {
-			this.scrollToSection(oSelectedSection.getId());
+			// fixes BCP:1680125278, new sections positionTop was not ready when calling scroll
+			jQuery.sap.delayedCall(0, this, function () {
+				this.scrollToSection(oSelectedSection.getId());
+			});
 		}
 	};
 
@@ -1259,7 +1262,12 @@ sap.ui.define([
 	};
 
 	ObjectPageLayout.prototype._computeScrollableContentSize = function(bShouldStick) {
-		var iScrollableContentHeight = jQuery.sap.byId(this.getId() + "-scroll")[0].scrollHeight;
+		var $scroll = jQuery.sap.byId(this.getId() + "-scroll"),
+			iScrollableContentHeight = 0;
+
+		if ($scroll && $scroll.length){
+			iScrollableContentHeight = $scroll[0].scrollHeight;
+		}
 
 		if (!this._bStickyAnchorBar && bShouldStick) { //anchorBar is removed from scrollable content upon snap
 			iScrollableContentHeight -= this.iAnchorBarHeight;
@@ -2006,6 +2014,11 @@ sap.ui.define([
 	ObjectPageLayout.prototype._storeScrollLocation = function () {
 		this._iStoredScrollPosition = this._oScroller.getScrollTop();
 		this._oStoredSection = this._oCurrentTabSubSection || this._oCurrentTabSection;
+
+		if (this.getSections().indexOf(this._oStoredSection) === -1) {
+			this._oStoredSection = null;
+		}
+
 		this._oCurrentTabSection = null;
 	};
 
@@ -2055,12 +2068,17 @@ sap.ui.define([
 		oFooter.toggleStyleClass("sapUxAPObjectPageFloatingFooterShow", bShow);
 		oFooter.toggleStyleClass("sapUxAPObjectPageFloatingFooterHide", !bShow);
 
+		if (this._iFooterWrapperHideTimeout) {
+			jQuery.sap.clearDelayedCall(this._iFooterWrapperHideTimeout);
+		}
+
 		if (bUseAnimations && !bShow) {
-			jQuery.sap.delayedCall(ObjectPageLayout.FOOTER_ANIMATION_DURATION, this, function () {
+			this._iFooterWrapperHideTimeout = jQuery.sap.delayedCall(ObjectPageLayout.FOOTER_ANIMATION_DURATION, this, function () {
 				this.$("footerWrapper").toggleClass("sapUiHidden", !bShow);
 			});
 		} else {
 			this.$("footerWrapper").toggleClass("sapUiHidden", !bShow);
+			this._iFooterWrapperHideTimeout = null;
 		}
 	};
 
