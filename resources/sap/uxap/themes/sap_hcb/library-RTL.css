@@ -489,6 +489,10 @@ objectPageHeader Title
 }
 .sapUxAPObjectPageHeaderIdentifier .sapUxAPObjectPageHeaderActionButtonHideText .sapMBtnInner.sapMBtnIconFirst,
 .sapUxAPObjectPageHeaderIdentifier .sapUxAPObjectPageHeaderActionButtonHideText .sapMBtnInner.sapMBtnBack {
+  padding-right: 0;
+}
+.sapUxAPObjectPageHeaderIdentifier .sapUxAPObjectPageHeaderActionButtonHideText .sapMBtnInner.sapMBtnIconFirst.sapMBtnText,
+.sapUxAPObjectPageHeaderIdentifier .sapUxAPObjectPageHeaderActionButtonHideText .sapMBtnInner.sapMBtnBack.sapMBtnText {
   padding-right: 0.75rem;
 }
 .sapUxAPObjectPageHeaderIdentifier .sapUxAPObjectPageHeaderActionButtonHideIcon .sapMBtnIcon {
@@ -540,25 +544,26 @@ objectPageHeader Title
   vertical-align: middle;
   font-size: 2rem;
 }
-.sapUxAPObjectPageHeaderIdentifier html[data-sap-ui-animation="on"] .sapUxAPObjectPageHeaderObjectImageForce .sapUxAPObjectPageHeaderObjectImage,
-html[data-sap-ui-animation="on"] .sapUxAPObjectPageHeaderStickied .sapUxAPObjectPageHeaderIdentifier .sapUxAPObjectPageHeaderObjectImage {
+html[data-sap-ui-animation="on"] .sapUxAPObjectPageHeaderObjectImageForce .sapUxAPObjectPageHeaderObjectImage,
+html[data-sap-ui-animation="on"] .sapUxAPObjectPageHeaderStickied  .sapUxAPObjectPageHeaderObjectImage {
   -webkit-transition: opacity 0.5s;
   transition: opacity 0.5s;
   opacity: 1;
 }
-.sapUxAPObjectPageHeaderIdentifier html[data-sap-ui-animation="off"] .sapUxAPObjectPageHeaderObjectImageForce .sapUxAPObjectPageHeaderObjectImage,
-html[data-sap-ui-animation="off"] .sapUxAPObjectPageHeaderStickied .sapUxAPObjectPageHeaderIdentifier .sapUxAPObjectPageHeaderObjectImage {
+html[data-sap-ui-animation="off"] .sapUxAPObjectPageHeaderObjectImageForce .sapUxAPObjectPageHeaderObjectImage,
+html[data-sap-ui-animation="off"] .sapUxAPObjectPageHeaderStickied  .sapUxAPObjectPageHeaderObjectImage {
   opacity: 1;
+}
+.sapUiMedia-Std-Desktop .sapUxAPObjectPageHeaderIdentifier {
+  padding-right: 3rem;
+}
+.sapUiMedia-Std-Tablet .sapUxAPObjectPageHeaderIdentifier,
+.sapUiMedia-Std-Desktop .sapMSplitContainer:not(.sapMSplitContainerHideMode) .sapMSplitContainerDetail .sapUxAPObjectPageHeaderIdentifier,
+.sapUiMedia-Std-Tablet .sapMSplitContainer:not(.sapMSplitContainerHideMode) .sapMSplitContainerDetail .sapUxAPObjectPageHeaderIdentifier {
+  padding-right: 2rem;
 }
 .sapUiMedia-Std-Phone .sapUxAPObjectPageHeaderIdentifier {
   padding-right: 1rem;
-}
-.sapUiMedia-Std-Tablet .sapUxAPObjectPageHeaderIdentifier,
-.sapUiMedia-Std-Desktop .sapUxAPObjectPageHeaderIdentifier {
-  padding-right: 2rem;
-}
-.sapUiMedia-Std-Desktop .sapMSplitContainerHideMode .sapUxAPObjectPageHeaderIdentifier {
-  padding-right: 3rem;
 }
 .sapUxAPObjectPageHeaderIdentifier .sapUxAPObjectPageHeaderIdentifierDescription {
   display: none;
@@ -893,15 +898,16 @@ objectPageHeader Content
 html[data-sap-ui-browser^='ie'] .sapUxAPObjectPageHeaderContent div.sapUxAPObjectPageHeaderContentItem {
   vertical-align: top;
 }
-.sapUiMedia-Std-Phone .sapUxAPObjectPageHeaderContent {
-  padding-right: 1rem;
+.sapUiMedia-Std-Desktop .sapUxAPObjectPageHeaderContent {
+  padding-right: 3rem;
 }
 .sapUiMedia-Std-Tablet .sapUxAPObjectPageHeaderContent,
-.sapUiMedia-Std-Desktop .sapUxAPObjectPageHeaderContent {
+.sapUiMedia-Std-Desktop .sapMSplitContainer:not(.sapMSplitContainerHideMode) .sapMSplitContainerDetail .sapUxAPObjectPageHeaderContent,
+.sapUiMedia-Std-Tablet .sapMSplitContainer:not(.sapMSplitContainerHideMode) .sapMSplitContainerDetail .sapUxAPObjectPageHeaderContent {
   padding-right: 2rem;
 }
-.sapUiMedia-Std-Desktop .sapMSplitContainerHideMode .sapUxAPObjectPageHeaderContent {
-  padding-right: 3rem;
+.sapUiMedia-Std-Phone .sapUxAPObjectPageHeaderContent {
+  padding-right: 1rem;
 }
 .sapUxAPObjectPageHeaderContentHidden {
   display: none;
