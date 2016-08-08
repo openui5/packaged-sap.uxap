@@ -1029,6 +1029,9 @@ html[data-sap-ui-browser="ie10"] .sapUxAPObjectPageHeaderContentCellLeft {
 .sapUxAPObjectPageHeaderDetailsHidden > * {
   visibility: hidden;
 }
+.sapUiLoSplitterH.sapUiLoSplitter .sapUxAPObjectPageHeaderContent {
+  white-space: normal;
+}
 .sapUxAPObjectPageLayout {
   width: 100%;
   height: 100%;
