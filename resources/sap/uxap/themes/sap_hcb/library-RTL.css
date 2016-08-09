@@ -1021,6 +1021,9 @@ html[data-sap-ui-browser="ie10"] .sapUxAPObjectPageHeaderContentCellLeft {
   padding-left: 1rem;
   align-self: flex-end;
 }
+.sapUiLoSplitterH.sapUiLoSplitter .sapUxAPObjectPageHeaderContent {
+  white-space: normal;
+}
 .sapUxAPObjectPageLayout {
   width: 100%;
   height: 100%;
