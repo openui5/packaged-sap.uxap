@@ -333,12 +333,15 @@ sap.ui.define([
 	};
 
 	ObjectPageLayout.prototype._onAfterRenderingDomReady = function () {
+		var oSectionToSelect = this._oStoredSection || this._oFirstVisibleSection;
+
 		this._bDomReady = true;
 
 		this._adjustHeaderHeights();
 
-		if (this.getUseIconTabBar()) {
-			this._setCurrentTabSection(this._oStoredSection || this._oFirstVisibleSection);
+		if (this.getUseIconTabBar() && oSectionToSelect) {
+			this._setSelectedSectionId(oSectionToSelect.getId());
+			this._setCurrentTabSection(oSectionToSelect);
 		}
 
 		this._initAnchorBarScroll();
@@ -743,27 +746,40 @@ sap.ui.define([
 
 		/* obtain the currently selected section in the navBar before navBar is destroyed,
 		 in order to reselect that section after that navBar is reconstructed */
-		var sSelectedSectionId = this._getSelectedSectionId();
+		var sSelectedSectionId = this._getSelectedSectionId(),
+			oSelectedSection = sap.ui.getCore().byId(sSelectedSectionId),
+			bSelectionChanged = false,
+			bKeepExpandedMode = false;
 
 		this._applyUxRules(true);
 
-		var oSelectedSection = sap.ui.getCore().byId(sSelectedSectionId);
-
 		/* check if the section that was previously selected is still available,
 		 as it might have been deleted, or emptied, or set to hidden in the previous step */
-		if (oSelectedSection && oSelectedSection.getVisible() && oSelectedSection._getInternalVisible()) {
-			this._setSelectedSectionId(sSelectedSectionId); //reselect the current section in the navBar
-			this._adjustLayout(null, false, true /* requires a check on lazy loading */);
-			return;
+		if (!oSelectedSection || !oSelectedSection.getVisible() || !oSelectedSection._getInternalVisible()) {
+			oSelectedSection = this._oFirstVisibleSection;
+			sSelectedSectionId = oSelectedSection && oSelectedSection.getId();
+			bSelectionChanged = true;
 		}
-		/* the section that was previously selected is not available anymore, so we cannot reselect it;
-		 in that case we have to select the first visible section instead */
-		oSelectedSection = this._oFirstVisibleSection;
+
 		if (oSelectedSection) {
-			// fixes BCP:1680125278, new sections positionTop was not ready when calling scroll
-			jQuery.sap.delayedCall(0, this, function () {
-				this.scrollToSection(oSelectedSection.getId());
-			});
+			this._setSelectedSectionId(sSelectedSectionId); //reselect the current section in the navBar
+			if (this.getUseIconTabBar()) {
+				this._setCurrentTabSection(oSelectedSection);
+			}
+			this._adjustLayout(null, false, true /* requires a check on lazy loading */);
+
+			bKeepExpandedMode = !this._bStickyAnchorBar
+				&& this._oFirstVisibleSection
+				&& (this._oFirstVisibleSection.getId() === oSelectedSection.getId());
+
+			if (bSelectionChanged && !bKeepExpandedMode) { /* bKeepExpandedMode check needed since scroll to section always brings sticky mode,
+			 so if the page is expanded and the selected section is
+			 the top section, then should not scroll */
+
+				jQuery.sap.delayedCall(0, this, function () { /* delayed call fixes BCP:1680125278, new sections positionTop was not ready when calling scroll */
+					this.scrollToSection(sSelectedSectionId);
+				});
+			}
 		}
 	};
 
@@ -845,6 +861,11 @@ sap.ui.define([
 	 */
 	ObjectPageLayout.prototype.scrollToSection = function (sId, iDuration, iOffset, bIsTabClicked) {
 		var oSection = sap.ui.getCore().byId(sId);
+
+		if (!this.getDomRef()){
+			jQuery.sap.log.warning("scrollToSection can only be used after the ObjectPage is rendered", this);
+			return;
+		}
 
 		if (this.getUseIconTabBar()) {
 			var oToSelect = oSection;
@@ -1094,7 +1115,9 @@ sap.ui.define([
 				if (oInfo.isSection) {
 					if (sPreviousSectionId) {           //except for the very first section
 						this._oSectionInfo[sPreviousSectionId].positionBottom = oInfo.positionTop;
-						this._oSectionInfo[sPreviousSubSectionId].positionBottom = oInfo.positionTop;
+						if (sPreviousSubSectionId) {
+							this._oSectionInfo[sPreviousSubSectionId].positionBottom = oInfo.positionTop;
+						}
 					}
 					sPreviousSectionId = oSectionBase.getId();
 					sPreviousSubSectionId = null;
@@ -1114,11 +1137,17 @@ sap.ui.define([
 			iLastVisibleHeight = this._$spacer.position().top - this._oSectionInfo[oLastVisibleSubSection.getId()].realTop;
 
 			//on desktop we need to set the bottom of the last section as well
-			if (this._bMobileScenario) {
+			if (this._bMobileScenario && sPreviousSectionId) {
 				this._oSectionInfo[sPreviousSectionId].positionBottom = this._oSectionInfo[sPreviousSectionId].positionTop + iLastVisibleHeight;
-			} else { //update the position bottom for the last subsection
-				this._oSectionInfo[sPreviousSubSectionId].positionBottom = this._oSectionInfo[sPreviousSubSectionId].positionTop + iLastVisibleHeight;
-				this._oSectionInfo[sPreviousSectionId].positionBottom = this._oSectionInfo[sPreviousSubSectionId].positionTop + iLastVisibleHeight;
+			} else {
+				// BCP: 1670390469 - for both variables here there are cases in which there's unsafe member access.
+				// This is an uncommon case and it's not really how do you get here
+				if (sPreviousSubSectionId) {
+					this._oSectionInfo[sPreviousSubSectionId].positionBottom = this._oSectionInfo[sPreviousSubSectionId].positionTop + iLastVisibleHeight;
+				}
+				if (sPreviousSectionId && sPreviousSubSectionId){
+					this._oSectionInfo[sPreviousSectionId].positionBottom = this._oSectionInfo[sPreviousSubSectionId].positionTop + iLastVisibleHeight;
+				}
 			}
 
 			//calculate the required additional space for the last section only

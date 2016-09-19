@@ -596,11 +596,11 @@ sap.ui.define([
 				}
 
 				// Force the design of the button to transparent
-				if (oAction instanceof Button && oAction.getVisible()) {
-					if (oAction instanceof Button && (oAction.getType() === "Default" || oAction.getType() === "Unstyled")) {
-						oAction.setProperty("type", sap.m.ButtonType.Transparent, false);
-					}
+				if (oAction instanceof Button && (oAction.getType() === "Default" || oAction.getType() === "Unstyled")) {
+					oAction.setProperty("type", sap.m.ButtonType.Transparent, false);
+				}
 
+				if (oAction instanceof Button && oAction.getVisible()) {
 					var oActionSheetButton = this._createActionSheetButton(oAction);
 
 					this._oActionSheetButtonMap[oAction.getId()] = oActionSheetButton; //store the originalId/reference for later use (adaptLayout)
@@ -676,19 +676,34 @@ sap.ui.define([
 		return oCopy;
 	};
 
-	ObjectPageHeader.prototype.onAfterRendering = function () {
-
-		this._adaptLayout();
+	ObjectPageHeader.prototype._handleImageNotFoundError = function () {
+		var oObjectImage = this._getInternalAggregation("_objectImage"),
+			oParent = this.getParent(),
+			$context = oParent ? oParent.$() : this.$();
 
 		if (this.getShowPlaceholder()) {
-			jQuery(".sapUxAPObjectPageHeaderObjectImage").off("error").error(function () {
-				jQuery(this).hide();
-				jQuery(".sapUxAPObjectPageHeaderPlaceholder").removeClass("sapUxAPHidePlaceholder");
-			});
+			/* The following two selectors affect both the HeaderTitle and HeaderContent */
+			$context.find(".sapMImg.sapUxAPObjectPageHeaderObjectImage").hide();
+			$context.find(".sapUxAPObjectPageHeaderPlaceholder").removeClass("sapUxAPHidePlaceholder");
 		} else {
-			jQuery(".sapUxAPObjectPageHeaderObjectImage").off("error").error(function () {
-				jQuery(this).addClass("sapMNoImg");
-			});
+			oObjectImage.addStyleClass("sapMNoImg");
+		}
+	};
+
+	ObjectPageHeader.prototype._clearImageNotFoundHandler = function (){
+		this._getInternalAggregation("_objectImage").$().off("error");
+	};
+
+	ObjectPageHeader.prototype.onAfterRendering = function () {
+		var $objectImage = this._getInternalAggregation("_objectImage").$();
+		this._adaptLayout();
+
+
+		this._clearImageNotFoundHandler();
+		$objectImage.error(this._handleImageNotFoundError.bind(this));
+
+		if (!this.getObjectImageURI()){
+			this._handleImageNotFoundError();
 		}
 
 		if (!this._iResizeId) {
@@ -950,7 +965,7 @@ sap.ui.define([
 	};
 
 	ObjectPageHeader.prototype.exit = function () {
-		jQuery(".sapUxAPObjectPageHeaderObjectImage").off("error");
+		this._clearImageNotFoundHandler();
 		if (this._iResizeId) {
 			ResizeHandler.deregister(this._iResizeId);
 		}
