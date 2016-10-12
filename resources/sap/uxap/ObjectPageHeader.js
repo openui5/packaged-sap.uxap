@@ -818,7 +818,9 @@ sap.ui.define([
 			oEvent.getSource()._setInternalVisible(true);
 		}
 
-		$actionButtons.css("visibility", "visible");
+		if (sap.ui.Device.system.phone) {
+			$actionButtons.css("visibility", "visible");
+		}
 
 		// verify overflow button visibility
 		if ($actionButtons.filter(":visible").length === $actionButtons.length) {
@@ -930,7 +932,10 @@ sap.ui.define([
 		this.getActions().forEach(function (oAction) {
 			if (oAction instanceof Button) {
 				oAction.$().show();
-				oAction.$().css("visibility", "hidden");
+
+				if (sap.ui.Device.system.phone) {
+					oAction.$().css("visibility", "hidden");
+				}
 
 				iWidthSum += oAction.$().outerWidth(true);
 			}
