@@ -754,6 +754,9 @@ objectPageHeader Content
   margin-bottom: 1rem;
   line-height: 1.5rem;
 }
+.sapUxAPObjectPageHeaderContent .sapUxAPObjectPageHeaderContentItem .sapMText {
+  line-height: 1.5rem;
+}
 .sapUxAPObjectPageHeaderContent .sapUxAPObjectPageHeaderContentItem.sapUiRespGrid {
   display: inherit;
 }
@@ -1340,6 +1343,7 @@ html[data-sap-ui-browser^="ie"][data-sap-ui-os^="win8"] .sapMShell .sapUxAPObjec
   line-height: 3rem;
 }
 .sapUxAPObjectPageSubSectionHeaderActions {
+  padding-right: 0.5rem;
   float: right;
   height: 3rem;
 }
