@@ -48,7 +48,7 @@ sap.ui.define(["jquery.sap.global", "sap/ui/core/Core", "sap/ui/core/library", "
 			"sap.uxap.ModelMapping",
 			"sap.uxap.ObjectPageHeaderLayoutData"
 		],
-		version: "1.38.11",
+		version: "1.38.12",
 		extensions: {
 			flChangeHandlers: {
 				"sap.uxap.ObjectPageLayout": {
@@ -295,7 +295,7 @@ sap.ui.define(["jquery.sap.global", "sap/ui/core/Core", "sap/ui/core/library", "
 		},
 		isTabletScenario: function () {
 
-			if (sap.ui.Device.system.tablet) {
+			if (!sap.ui.Device.system.desktop && sap.ui.Device.system.tablet) {
 				return true;
 			}
 
