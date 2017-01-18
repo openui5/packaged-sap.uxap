@@ -1,11 +1,11 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2016 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2016 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 /* =========================== */
@@ -1275,6 +1275,9 @@ html[data-sap-ui-browser^="ie"][data-sap-ui-os^="win8"] .sapMShell .sapUxAPObjec
 .sapUxAPObjectPageSection {
   margin-left: 0;
   margin-bottom: 0;
+}
+.sapUxAPObjectPageSectionTitleUppercase {
+  text-transform: uppercase;
 }
 .sapUxAPObjectPageSectionHeader {
   box-sizing: border-box;

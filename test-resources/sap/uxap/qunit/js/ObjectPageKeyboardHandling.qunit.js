@@ -4,8 +4,6 @@
 		sAnchorSelector = ".sapUxAPAnchorBarScrollContainer .sapUxAPAnchorBarButton",
 		sPopOverAnchorSelector = ".sapMPopoverScroll > .sapUxAPAnchorBarButton";
 
-	sinon.config.useFakeTimers = true;
-
 	jQuery.sap.registerModulePath("view", "view");
 
 	sap.ui.controller("viewController", {});
@@ -38,6 +36,7 @@
 
 	module("AnchorBar", {
 		beforeEach: function () {
+			this.clock = sinon.useFakeTimers();
 			sap.ui.Device.system.phone = false;
 			jQuery("html")
 				.removeClass("sapUiMedia-Std-Phone sapUiMedia-Std-Desktop sapUiMedia-Std-Tablet")
@@ -50,6 +49,15 @@
 			this.assertCorrectTabIndex = function ($elment, sMessage, assert) {
 				assert.strictEqual($elment.attr(sTabIndex), sFocusable, sMessage);
 			}
+		},
+		afterEach: function() {
+			// trigger 'escape' keypress event to potentially close the popover
+			var oActiveElement = document.activeElement;
+			sap.ui.test.qunit.triggerKeydown(oActiveElement, jQuery.sap.KeyCodes.ESCAPE);
+			sap.ui.test.qunit.triggerKeyup(oActiveElement, jQuery.sap.KeyCodes.ESCAPE);
+			this.clock.tick(500);
+
+			this.clock.restore();
 		}
 	});
 
@@ -177,10 +185,6 @@
 		var aPopoverAnchors = $(sPopOverAnchorSelector),
 			iFirstSubAnchor = aPopoverAnchors[0].id;
 		assert.ok(jQuery.sap.byId(iFirstSubAnchor).is(":focus"), "Menu should be opened and first anchor focused");
-
-		// Close the popover
-		sap.ui.test.qunit.triggerKeydown(jQuery.sap.byId(iFirstSubAnchor), jQuery.sap.KeyCodes.ESCAPE);
-		sap.ui.test.qunit.triggerKeyup(jQuery.sap.byId(iFirstSubAnchor), jQuery.sap.KeyCodes.ESCAPE);
 	});
 
 	QUnit.test("PAGE UP: Anchor level", function (assert) {
@@ -437,14 +441,6 @@
 		assert.strictEqual($btn.is(":focus"), true, "Interactiove element must be focused back again");
 	});
 
-	QUnit.test("ObjectPageSection F7 - SubSection without remebered control", function (assert) {
-		var $title = jQuery(jQuery("#UxAP-70_KeyboardHandling--multiple-sub-section-2-headerTitle")[0]);
-		$subSection = core.byId("UxAP-70_KeyboardHandling--multiple-sub-section-2").$();
-
-		sap.ui.test.qunit.triggerKeydown($subSection, jQuery.sap.KeyCodes.F7);
-		assert.strictEqual($title.is(":focus"), true, "First interactive control must be focused");
-	});
-
 	QUnit.test("ObjectPageSection F7 - interactive control inside Section with only one SubSection", function (assert) {
 		var $btn = core.byId("UxAP-70_KeyboardHandling--interactive-el-multiple-sub-section").$(),
 			$subSection = core.byId("UxAP-70_KeyboardHandling--multiple-sub-section-2").$();
@@ -472,47 +468,6 @@
 
 		sap.ui.test.qunit.triggerKeydown($subSection, jQuery.sap.KeyCodes.F7);
 		assert.strictEqual($btnToolbar.is(":focus"), true, "Button must be focused");
-	});
-
-	/*******************************************************************************
-	 * ObjectPage F6
-	 ******************************************************************************/
-
-	QUnit.test("ObjectPageAnchorBar F6 - after anchor bar focus must be at sub section title", function (assert) {
-		var oAncorBar = getAnchorBar(),
-			aAnchors = oAncorBar.getContent();
-
-		var $btn = aAnchors[0].getDomRef(),
-			$subSectionTitle = jQuery(jQuery("#__section0-headerTitle")[0]),
-			$subSectionTitle2 = jQuery(jQuery("#__section2-headerTitle")[0]);
-
-		$btn.focus();
-		sap.ui.test.qunit.triggerKeydown($btn, jQuery.sap.KeyCodes.F6);
-		assert.strictEqual($subSectionTitle.is(":focus"), true, "SubSection title must be focused");
-
-		sap.ui.test.qunit.triggerKeydown($subSectionTitle, jQuery.sap.KeyCodes.F6);
-		assert.strictEqual($subSectionTitle2.is(":focus"), true, "Second SubSection title must be focused");
-	});
-
-	QUnit.test("ObjectPageAnchorBar F6 - after anchor bar focus must be at sub section title", function (assert) {
-		var $section = core.byId("UxAP-70_KeyboardHandling--section-with-single-sub-section").$(),
-			$subSectionTitle = jQuery(jQuery("#UxAP-70_KeyboardHandling--single-sub-section-headerTitle")[0]),
-			$button1 = core.byId("__button0").$(),
-			$link = core.byId("__link1").$(),
-			$subSectionTitle2 = jQuery(jQuery("#UxAP-70_KeyboardHandling--multiple-sub-section-1-headerTitle")[0]);
-
-		$section.focus();
-		sap.ui.test.qunit.triggerKeydown($section, jQuery.sap.KeyCodes.F6);
-		assert.strictEqual($subSectionTitle.is(":focus"), true, "SubSection title must be focused");
-
-		sap.ui.test.qunit.triggerKeydown($subSectionTitle, jQuery.sap.KeyCodes.F6);
-		assert.strictEqual($button1.is(":focus"), true, "Second SubSection title must be focused");
-
-		sap.ui.test.qunit.triggerKeydown($button1, jQuery.sap.KeyCodes.F6);
-		assert.strictEqual($link.is(":focus"), true, "Second SubSection title must be focused");
-
-		sap.ui.test.qunit.triggerKeydown($button1, jQuery.sap.KeyCodes.F6);
-		assert.strictEqual($subSectionTitle2.is(":focus"), true, "Second SubSection title must be focused");
 	});
 
 }(jQuery, QUnit, sinon));
