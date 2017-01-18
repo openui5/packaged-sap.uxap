@@ -1,6 +1,6 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2016 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -289,7 +289,7 @@ sap.ui.define([
 		this._storeScrollLocation();
 
 		this._getHeaderContent().setContentDesign(this._getHeaderDesign());
-		this._oABHelper._getAnchorBar().setUpperCase(this.getUpperCaseAnchorBar());
+		this._oABHelper._getAnchorBar().setProperty("upperCase", this.getUpperCaseAnchorBar(), true);
 
 		this._applyUxRules();
 
@@ -802,6 +802,12 @@ sap.ui.define([
 				this.invalidate();
 			}
 		}
+	};
+
+
+	ObjectPageLayout.prototype.setUpperCaseAnchorBar = function (bValue) {
+		this._oABHelper._getAnchorBar().setProperty("upperCase", bValue);
+		return this.setProperty("upperCaseAnchorBar", bValue, true /* don't re-render the whole objectPageLayout */);
 	};
 
 	/*************************************************************************************
@@ -2116,23 +2122,14 @@ sap.ui.define([
 
 	ObjectPageLayout.prototype.onkeyup = function (oEvent) {
 		var oFocusedControlId,
-			oFocusedControl,
-			oFocusedControlPosition,
-			iHeaderHeight;
+			oFocusedControl;
 
 		if (oEvent.which === jQuery.sap.KeyCodes.TAB) {
 			oFocusedControlId = sap.ui.getCore().getCurrentFocusedControlId();
 			oFocusedControl = oFocusedControlId && sap.ui.getCore().byId(oFocusedControlId);
 
-			if (oFocusedControl && oFocusedControl.$().length) {
-				oFocusedControlPosition = oFocusedControl.$().position().top;
-				iHeaderHeight = this.iHeaderTitleHeight + this.iHeaderContentHeight + this.iAnchorBarHeight;
-
-				if (this._isFirstSection(oFocusedControl)) {
-					this._scrollTo(0, 0);
-				} else if (oFocusedControlPosition > iHeaderHeight) {
-					this._scrollTo(oFocusedControlPosition - this.iHeaderTitleHeight - this.iAnchorBarHeight, 0);
-				}
+			if (oFocusedControl && this._isFirstSection(oFocusedControl)) {
+				this._scrollTo(0, 0);
 			}
 		}
 	};
