@@ -44,7 +44,7 @@ sap.ui.define([
 				showPopover: this.getObjectPageLayout().getShowAnchorBarPopover()
 			});
 
-			this.getObjectPageLayout().setAggregation("_anchorBar", oAnchorBar);
+			this.getObjectPageLayout().setAggregation("_anchorBar", oAnchorBar, true);
 		}
 
 		return oAnchorBar;
