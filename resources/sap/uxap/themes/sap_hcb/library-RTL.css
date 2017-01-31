@@ -1073,6 +1073,7 @@ body > .sapUxAPObjectPageLayout,
   -moz-flex-grow: 1;
   -ms-flex-grow: 1;
   flex-grow: 1;
+  overflow-y: auto;
 }
 .sapUxAPObjectPageWrapperTransform {
   /* Performance tweak - force the objectPageWrapper content on to the GPU effectively separating it in a different
@@ -1418,10 +1419,21 @@ html[data-sap-ui-browser^="ie"][data-sap-ui-os^="win8"] .sapMShell .sapUxAPObjec
   margin-right: 0;
 }
 /* remove the padding of form content, since form itself is already in a grid-cell that provides the required extra spacing */
+/* (1) remove the padding of direct children: */
 .sapUxAPBlockContainer .sapUiFormResGrid > div {
   padding-right: 0;
   padding-top: 0;
 }
+/* (2) if the direct child is a form container with a title, a more specific selector is needed: */
+.sapUxAPBlockContainer .sapUiFormResGrid > div.sapUiFormContainerTitle {
+  padding-top: 0;
+}
+/* (3) if the direct child is a form container with a title, a more specific selector is needed for the title itself: */
+.sapUxAPBlockContainer .sapUiFormResGrid > div.sapUiFormContainerTitle > .sapUiFormTitle {
+  line-height: 2rem;
+  margin-bottom: 0;
+}
+/* compact size */
 .sapUiSizeCompact .sapUxAPObjectPageSubSectionHeaderTitle {
   height: 2rem;
   line-height: 2rem;
