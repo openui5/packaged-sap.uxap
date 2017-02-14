@@ -757,6 +757,9 @@ objectPageHeader Content
 .sapUxAPObjectPageHeaderContent .sapUxAPObjectPageHeaderContentItem .sapMText {
   line-height: 1.5rem;
 }
+.sapUxAPObjectPageHeaderContent .sapMObjectAttributeDiv .sapMText {
+  line-height: normal;
+}
 .sapUxAPObjectPageHeaderContent .sapUxAPObjectPageHeaderContentItem.sapUiRespGrid {
   display: inherit;
 }
