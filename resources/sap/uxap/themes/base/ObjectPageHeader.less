@@ -1,3 +1,33 @@
+/* ========================================== */
+/* CSS for control sap.uxap/ObjectPageHeader  */
+/* Base theme                                 */
+/* ========================================== */
+
+.sapUxAPObjectPageHeaderIdentifier {
+	background-color: @sapUiObjectHeaderBackground;
+
+	.sapUxAPObjectPageHeaderIdentifierContainer {
+		.sapUxAPObjectPageHeaderIdentifierDescription {
+			font-size: @sapMFontMediumSize;
+		}
+	}
+
+	.sapUxAPObjectPageHeaderIdentifierActions {
+		&.sapUxAPObjectPageHeaderIdentifierActionsForce, .sapUxAPObjectPageHeaderStickied & {
+			display: inline-block;
+		}
+	}
+}
+
+html.sapUiMedia-Std-Phone .sapUxAPObjectPageHeaderIdentifierTitle,
+html .sapUiContainer-Narrow .sapUxAPObjectPageHeaderIdentifierTitle {
+	font-size: @sapMFontHeader4Size;
+}
+
+.sapUxAPObjectPageHeaderSeparator {
+	background-color: @sapUiToolbarSeparatorColor;
+}
+
 h1.sapUxAPObjectPageHeaderIdentifierTitle,
 h1.sapUxAPObjectPageHeaderIdentifierTitleForce {
 	margin: 0;
@@ -95,7 +125,7 @@ objectPageHeader Title
 	.sapUxAPObjectPageHeaderIdentifierActions {
 		position: absolute;
 		top: 0;
-		padding-top: 0.75rem;
+		padding-top: 0.25rem;
 		right: 0.25rem;
 		display: inline-block;
 		float: right;
@@ -107,10 +137,6 @@ objectPageHeader Title
 		> *:first-child {
 			margin-left: 0;
 		}
-	}
-
-	.sapUxAPObjectPageHeaderIdentifierActions.sapUxAPObjectPageHeaderIdentifierActionsNoPadding {
-		padding-top: 0rem;
 	}
 
 	.sapUiMedia-Std-Phone .sapUxAPObjectPageHeaderIdentifierActions {
@@ -142,6 +168,10 @@ html[data-sap-ui-animation="off"] .sapUxAPObjectPageHeaderStickied & .sapUxAPObj
 
 .sapUiMedia-Std-Desktop .sapUxAPObjectPageHeaderIdentifier {
 	padding-left: 3rem;
+}
+
+.sapUiSizeCompact .sapUxAPObjectPageHeaderIdentifier {
+	min-height:2.5rem;
 }
 
 .sapUiMedia-Std-Tablet .sapUxAPObjectPageHeaderIdentifier,
@@ -371,4 +401,3 @@ html[dir=rtl] .sapUxAPObjectPageHeaderMarks .sapMObjStatusMarker .sapUiIcon:firs
   background: transparent;
   box-shadow: none;
 }
-

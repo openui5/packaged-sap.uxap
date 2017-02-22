@@ -48,7 +48,7 @@ sap.ui.define(["jquery.sap.global", "sap/ui/core/Core", "sap/ui/core/library", "
 			"sap.uxap.ModelMapping",
 			"sap.uxap.ObjectPageHeaderLayoutData"
 		],
-		version: "1.46.2",
+		version: "1.46.3",
 		extensions: {
 			flChangeHandlers: {
 				"sap.uxap.ObjectPageLayout": {
