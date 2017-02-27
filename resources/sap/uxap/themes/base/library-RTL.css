@@ -1185,7 +1185,6 @@ html[data-sap-ui-browser^="ie"][data-sap-ui-os^="win8"] .sapMShell .sapUxAPObjec
   height: auto;
   overflow: auto;
   word-wrap: break-word;
-  word-break: break-all;
   padding: 1rem 3rem 0 0;
 }
 .sapUiMedia-Std-Desktop .sapMSplitContainer:not(.sapMSplitContainerHideMode) .sapMSplitContainerDetail .sapUxAPObjectPageSubSectionHeader,
@@ -1255,7 +1254,6 @@ html[data-sap-ui-browser^="ie"][data-sap-ui-os^="win8"] .sapMShell .sapUxAPObjec
   height: auto;
   white-space: normal;
   word-wrap: break-word;
-  word-break: break-all;
   line-height: normal;
   padding-top: 1rem;
 }
