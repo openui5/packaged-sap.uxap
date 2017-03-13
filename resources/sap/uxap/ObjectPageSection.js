@@ -155,7 +155,7 @@ sap.ui.define([
 		var sAriaLabeledBy = "ariaLabelledBy";
 
 		if (!this.getAggregation(sAriaLabeledBy)) {
-			this.setAggregation(sAriaLabeledBy, this._getAriaLabelledBy());
+			this.setAggregation(sAriaLabeledBy, this._getAriaLabelledBy(), true); // this is called onBeforeRendering, so suppress invalidate
 		}
 
 		this._updateImportance();
@@ -269,7 +269,7 @@ sap.ui.define([
 				text: this._getShowHideAllButtonText(!this._thereAreHiddenSubSections()),
 				press: this._showHideContentAllContent.bind(this),
 				type: sap.m.ButtonType.Transparent
-			}).addStyleClass("sapUxAPSectionShowHideButton"));
+			}).addStyleClass("sapUxAPSectionShowHideButton"), true); // this is called from the renderer, so suppress invalidate
 		}
 
 		return this.getAggregation("_showHideAllButton");
@@ -296,7 +296,7 @@ sap.ui.define([
 				text: this._getShowHideButtonText(!this._getIsHidden()),
 				press: this._showHideContent.bind(this),
 				type: sap.m.ButtonType.Transparent
-			}).addStyleClass("sapUxAPSectionShowHideButton"));
+			}).addStyleClass("sapUxAPSectionShowHideButton"), true); // this is called from the renderer, so suppress invalidate
 		}
 
 		return this.getAggregation("_showHideButton");
