@@ -21,6 +21,7 @@ Common Compact/Cozy
 /* BAR */
 .sapUxAPAnchorBar {
   height: 3rem;
+  margin-bottom: 0.125rem;
 }
 .sapUxAPAnchorBar.sapMTB {
   padding-right: 0;
