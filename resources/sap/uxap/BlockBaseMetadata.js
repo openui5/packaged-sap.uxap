@@ -17,7 +17,7 @@ sap.ui.define(["jquery.sap.global", "sap/ui/core/ElementMetadata"], function (jQ
 	 *
 	 * @class
 	 * @author SAP SE
-	 * @version 1.44.11
+	 * @version 1.44.12
 	 * @since 1.26
 	 * @alias sap.uxap.BlockBaseMetadata
 	 */
