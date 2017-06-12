@@ -1379,20 +1379,23 @@ html .sapUiContainer-Narrow .sapUxAPObjectPageSectionHeader {
   height: 2.5rem;
   line-height: 2rem;
 }
-/* IE does not support css outline-offset */
-html[data-sap-ui-browser^="ie"].sap-desktop .sapUxAPObjectPageSection:focus {
+/* IE and Edge ignores outline-offset. Use an overlay: */
+html[data-sap-ui-browser^="ie"].sap-desktop .sapUxAPObjectPageSection:focus,
+html[data-sap-ui-browser^="ed"].sap-desktop .sapUxAPObjectPageSection:focus {
   outline: none;
   position: relative;
 }
-html[data-sap-ui-browser^="ie"].sap-desktop .sapUxAPObjectPageSection:focus:before {
-  content: "";
+html[data-sap-ui-browser^="ie"].sap-desktop .sapUxAPObjectPageSection:focus:before,
+html[data-sap-ui-browser^="ed"].sap-desktop .sapUxAPObjectPageSection:focus:before {
+  content: " ";
   box-sizing: border-box;
   width: 100%;
   height: 100%;
   position: absolute;
   right: 0;
   top: 0;
-  border: 0.125rem dotted #000000;
+  border: 0.0625rem dashed #000000;
+  pointer-events: none;
 }
 /* ============================================== */
 /* CSS for control sap.uxap/ObjectPageSubSection  */
@@ -1526,14 +1529,14 @@ html .sapUiContainer-Medium .sapUxAPObjectPageSubSectionHeader {
 .sapUiSizeCompact .sapUxAPBlockContainerPhone {
   padding: 1rem 1rem 2rem 1rem;
 }
-/* IE ignores outline-offset. Use an overlay: */
-html[data-sap-ui-browser^="ie"] .sapUxAPObjectPageSubSection:focus,
-.sapUxAPObjectPageSubSectionHeaderTitle:focus {
+/* IE and Edge ignores outline-offset. Use an overlay: */
+html[data-sap-ui-browser^="ie"].sap-desktop .sapUxAPObjectPageSubSection:focus,
+html[data-sap-ui-browser^="ed"].sap-desktop .sapUxAPObjectPageSubSection:focus {
   outline: none;
   position: relative;
 }
-html[data-sap-ui-browser^="ie"] .sapUxAPObjectPageSubSection:focus:before,
-.sapUxAPObjectPageSubSectionHeaderTitle:focus:before {
+html[data-sap-ui-browser^="ie"].sap-desktop .sapUxAPObjectPageSubSection:focus:before,
+html[data-sap-ui-browser^="ed"].sap-desktop .sapUxAPObjectPageSubSection:focus:before {
   content: " ";
   box-sizing: border-box;
   width: 100%;
@@ -1541,7 +1544,9 @@ html[data-sap-ui-browser^="ie"] .sapUxAPObjectPageSubSection:focus:before,
   position: absolute;
   right: 0;
   top: 0;
-  border: 0.0625rem dotted #000000;
+  left: 0;
+  bottom: 0;
+  border: 0.0625rem dashed #000000;
   pointer-events: none;
 }
 
