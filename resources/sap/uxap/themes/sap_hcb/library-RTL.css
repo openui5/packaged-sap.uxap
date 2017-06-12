@@ -612,7 +612,7 @@ objectPageHeader Title
   position: absolute;
   top: 0;
   padding-top: 0.25rem;
-  left: 0.25rem;
+  left: 1.25rem;
   display: inline-block;
   float: left;
   vertical-align: top;
@@ -1034,13 +1034,10 @@ html .sapUiContainer-Narrow .sapUxAPObjectPageHeaderContent {
 .sapUxAPObjectPageHeaderContentImageContainer .sapUxAPObjectPageHeaderPlaceholder .sapUiIcon {
   margin: 0;
 }
-.sapUiMedia-Std-Desktop .sapUxAPObjectPageHeaderContentImageContainer .sapMImg {
-  height: 8rem;
-  width: auto;
-}
+.sapUiMedia-Std-Desktop .sapUxAPObjectPageHeaderContentImageContainer .sapMImg,
 .sapUiMedia-Std-Tablet .sapUxAPObjectPageHeaderContentImageContainer .sapMImg,
 html .sapUiContainer-Medium .sapUxAPObjectPageHeaderContentImageContainer .sapMImg {
-  height: 6rem;
+  height: 5rem;
   width: auto;
 }
 .sapUiMedia-Std-Phone .sapUxAPObjectPageHeaderContentImageContainer .sapMImg,
@@ -1070,8 +1067,8 @@ html[data-sap-ui-browser^="cr4"] .sapUxAPObjectPageHeaderContentImageContainer >
 }
 .sapUiMedia-Std-Tablet .sapUxAPObjectPageHeaderContent .sapUxAPObjectPageHeaderPlaceholder,
 html .sapUiContainer-Medium .sapUxAPObjectPageHeaderContent .sapUxAPObjectPageHeaderPlaceholder {
-  width: 6rem;
-  height: 6rem;
+  width: 5rem;
+  height: 5rem;
 }
 .sapUiMedia-Std-Phone .sapUxAPObjectPageHeaderContent .sapUxAPObjectPageHeaderPlaceholder,
 html .sapUiContainer-Narrow .sapUxAPObjectPageHeaderContent .sapUxAPObjectPageHeaderPlaceholder {
@@ -1383,20 +1380,23 @@ html .sapUiContainer-Narrow .sapUxAPObjectPageSectionHeader {
   height: 2.5rem;
   line-height: 2rem;
 }
-/* IE does not support css outline-offset */
-html[data-sap-ui-browser^="ie"].sap-desktop .sapUxAPObjectPageSection:focus {
+/* IE and Edge ignores outline-offset. Use an overlay: */
+html[data-sap-ui-browser^="ie"].sap-desktop .sapUxAPObjectPageSection:focus,
+html[data-sap-ui-browser^="ed"].sap-desktop .sapUxAPObjectPageSection:focus {
   outline: none;
   position: relative;
 }
-html[data-sap-ui-browser^="ie"].sap-desktop .sapUxAPObjectPageSection:focus:before {
-  content: "";
+html[data-sap-ui-browser^="ie"].sap-desktop .sapUxAPObjectPageSection:focus:before,
+html[data-sap-ui-browser^="ed"].sap-desktop .sapUxAPObjectPageSection:focus:before {
+  content: " ";
   box-sizing: border-box;
   width: 100%;
   height: 100%;
   position: absolute;
   right: 0;
   top: 0;
-  border: 0.125rem dotted #ffffff;
+  border: 0.0625rem dashed #ffffff;
+  pointer-events: none;
 }
 /* ============================================== */
 /* CSS for control sap.uxap/ObjectPageSubSection  */
@@ -1519,14 +1519,14 @@ html .sapUiContainer-Medium .sapUxAPObjectPageSubSectionHeader {
   height: 2rem;
   line-height: 2rem;
 }
-/* IE ignores outline-offset. Use an overlay: */
-html[data-sap-ui-browser^="ie"] .sapUxAPObjectPageSubSection:focus,
-.sapUxAPObjectPageSubSectionHeaderTitle:focus {
+/* IE and Edge ignores outline-offset. Use an overlay: */
+html[data-sap-ui-browser^="ie"].sap-desktop .sapUxAPObjectPageSubSection:focus,
+html[data-sap-ui-browser^="ed"].sap-desktop .sapUxAPObjectPageSubSection:focus {
   outline: none;
   position: relative;
 }
-html[data-sap-ui-browser^="ie"] .sapUxAPObjectPageSubSection:focus:before,
-.sapUxAPObjectPageSubSectionHeaderTitle:focus:before {
+html[data-sap-ui-browser^="ie"].sap-desktop .sapUxAPObjectPageSubSection:focus:before,
+html[data-sap-ui-browser^="ed"].sap-desktop .sapUxAPObjectPageSubSection:focus:before {
   content: " ";
   box-sizing: border-box;
   width: 100%;
@@ -1534,7 +1534,9 @@ html[data-sap-ui-browser^="ie"] .sapUxAPObjectPageSubSection:focus:before,
   position: absolute;
   right: 0;
   top: 0;
-  border: 0.0625rem dotted #ffffff;
+  left: 0;
+  bottom: 0;
+  border: 0.0625rem dashed #ffffff;
   pointer-events: none;
 }
 /* ============================== */
