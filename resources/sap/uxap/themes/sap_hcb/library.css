@@ -613,7 +613,7 @@ objectPageHeader Title
   position: absolute;
   top: 0;
   padding-top: 0.25rem;
-  right: 0.25rem;
+  right: 1.25rem;
   display: inline-block;
   float: right;
   vertical-align: top;
@@ -886,6 +886,7 @@ html[dir=rtl] .sapUxAPObjectPageHeaderMarks .sapMObjStatusMarker .sapUiIcon:firs
 .sapUxAPObjectPageHeaderContent,
 .sapUxAPObjectPageHeaderContent > .sapUxAPObjectPageHeaderSeparatorContainer,
 .sapUxAPObjectPageHeaderContent > .sapUxAPObjectPageHeaderWidthContainer {
+  /* ObjectAttribute will not truncate inside ObjectPage but rather will go on more lines */
   /* ProgressIndicator has display flex, but OPHeaderContent override it by setting display inline-block
 		* for each content entry to order the entries horizontally.
 		* In order to keep the display flex behaviour of the PI and the inline-block behaviour inside OPHeaderContent,
@@ -946,6 +947,21 @@ html[dir=rtl] .sapUxAPObjectPageHeaderMarks .sapMObjStatusMarker .sapUiIcon:firs
 .sapUxAPObjectPageHeaderContent > .sapUxAPObjectPageHeaderWidthContainer .sapMOH .sapMOHTitleArrow {
   right: 0.5rem;
   margin-left: 0;
+}
+.sapUxAPObjectPageHeaderContent .sapUxAPObjectPageHeaderContentItem.sapMObjectAttributeActive,
+.sapUxAPObjectPageHeaderContent > .sapUxAPObjectPageHeaderSeparatorContainer .sapUxAPObjectPageHeaderContentItem.sapMObjectAttributeActive,
+.sapUxAPObjectPageHeaderContent > .sapUxAPObjectPageHeaderWidthContainer .sapUxAPObjectPageHeaderContentItem.sapMObjectAttributeActive {
+  line-height: 1rem;
+}
+.sapUxAPObjectPageHeaderContent .sapMObjectAttributeActive .sapMObjectAttributeTitle,
+.sapUxAPObjectPageHeaderContent > .sapUxAPObjectPageHeaderSeparatorContainer .sapMObjectAttributeActive .sapMObjectAttributeTitle,
+.sapUxAPObjectPageHeaderContent > .sapUxAPObjectPageHeaderWidthContainer .sapMObjectAttributeActive .sapMObjectAttributeTitle,
+.sapUxAPObjectPageHeaderContent .sapMObjectAttributeActive .sapMObjectAttributeText,
+.sapUxAPObjectPageHeaderContent > .sapUxAPObjectPageHeaderSeparatorContainer .sapMObjectAttributeActive .sapMObjectAttributeText,
+.sapUxAPObjectPageHeaderContent > .sapUxAPObjectPageHeaderWidthContainer .sapMObjectAttributeActive .sapMObjectAttributeText {
+  display: initial;
+  white-space: pre-line;
+  word-wrap: break-word;
 }
 .sapUxAPObjectPageHeaderContent .sapUiVltCell > .sapMObjectAttributeDiv,
 .sapUxAPObjectPageHeaderContent > .sapUxAPObjectPageHeaderSeparatorContainer .sapUiVltCell > .sapMObjectAttributeDiv,
@@ -1516,11 +1532,37 @@ html .sapUiContainer-Medium .sapUxAPObjectPageSubSectionHeader {
 .sapUxAPBlockContainerDesktop {
   padding: 1rem 2rem 3rem 2rem;
 }
+.sapUxAPBlockContainerDesktop .sapUiFormResGrid > div {
+  padding: 0 0;
+}
 .sapUxAPBlockContainerTablet {
   padding: 1rem 1rem 3rem 1rem;
 }
+.sapUxAPBlockContainerTablet .sapUiFormResGrid > div {
+  padding: 0 0;
+}
 .sapUxAPBlockContainerPhone {
-  padding: 1rem 0 1rem 0;
+  padding: 0 1rem;
+}
+.sapUxAPBlockContainerPhone .sapUiFormResGrid > div {
+  padding: 0 0;
+}
+.sapUxAPBlockContainerPhone .sapUiRespGrid.sapUiRespGridHSpace1 {
+  padding: 0 0;
+}
+.sapUxAPBlockContainerPhone .sapUiRespGrid.sapUiRespGridHSpace1 > div {
+  margin: 0 0;
+}
+.sapUxAPObjectPageSubSectionPromoted .sapUxAPBlockContainerPhone {
+  padding-top: 1rem;
+}
+.sapUiMedia-Std-Desktop .sapMSplitContainer:not(.sapMSplitContainerHideMode) .sapMSplitContainerDetail .sapUiRespGrid.sapUiRespGridHSpace1,
+.sapUiMedia-Std-Phone .sapMSplitContainer:not(.sapMSplitContainerHideMode) .sapUiRespGrid.sapUiRespGridHSpace1 {
+  padding: 0 0;
+}
+.sapUiMedia-Std-Desktop .sapMSplitContainer:not(.sapMSplitContainerHideMode) .sapMSplitContainerDetail .sapUiRespGrid.sapUiRespGridHSpace1 > div,
+.sapUiMedia-Std-Phone .sapMSplitContainer:not(.sapMSplitContainerHideMode) .sapUiRespGrid.sapUiRespGridHSpace1 > div {
+  margin: 0 0;
 }
 /* compact size */
 .sapUiSizeCompact .sapUxAPObjectPageSubSectionHeaderTitle {
@@ -1533,6 +1575,15 @@ html .sapUiContainer-Medium .sapUxAPObjectPageSubSectionHeader {
 .sapUiSizeCompact .sapUxAPBlockContainerTablet,
 .sapUiSizeCompact .sapUxAPBlockContainerPhone {
   padding: 1rem 1rem 2rem 1rem;
+}
+.sapUiSizeCompact .sapUxAPBlockContainerPhone .sapUiFormResGrid > div {
+  padding: 0 0;
+}
+.sapUiSizeCompact .sapUxAPBlockContainerPhone .sapUiRespGrid.sapUiRespGridHSpace1 {
+  padding: 0 0;
+}
+.sapUiSizeCompact .sapUxAPBlockContainerPhone .sapUiRespGrid.sapUiRespGridHSpace1 > div {
+  margin: 0 0;
 }
 /* IE and Edge ignores outline-offset. Use an overlay: */
 html[data-sap-ui-browser^="ie"].sap-desktop .sapUxAPObjectPageSubSection:focus,
