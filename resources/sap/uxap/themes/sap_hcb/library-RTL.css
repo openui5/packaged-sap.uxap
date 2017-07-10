@@ -649,7 +649,7 @@ html[data-sap-ui-animation="off"] .sapUxAPObjectPageHeaderStickied  .sapUxAPObje
   padding-right: 3rem;
 }
 .sapUiSizeCompact .sapUxAPObjectPageHeaderIdentifier {
-  min-height: 2.5rem;
+  min-height: 2.5625rem;
 }
 .sapUiMedia-Std-Tablet .sapUxAPObjectPageHeaderIdentifier,
 .sapUiMedia-Std-Desktop .sapMSplitContainer:not(.sapMSplitContainerHideMode) .sapMSplitContainerDetail .sapUxAPObjectPageHeaderIdentifier,
@@ -827,6 +827,9 @@ html[dir=rtl] .sapUxAPObjectPageHeaderMarks .sapMObjStatusMarker .sapUiIcon:firs
 .sapUiSizeCompact .sapUxAPObjectPageHeaderSeparator {
   height: 1.5rem;
   margin-top: 0.25rem;
+}
+.sapUiSizeCompact .sapUxAPObjectPageHeaderIdentifier .sapUxAPObjectPageHeaderIdentifierActions {
+  padding-top: 0.75rem;
 }
 /* Fiori 2.0 adaptation */
 .sapF2CollapsedHeader .sapUxAPObjectPageHeaderNavigation > .sapMBar {
