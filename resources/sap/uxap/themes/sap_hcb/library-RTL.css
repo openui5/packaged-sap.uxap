@@ -21,7 +21,6 @@ Common Compact/Cozy
 /* BAR */
 .sapUxAPAnchorBar {
   height: 3rem;
-  margin-bottom: 0.125rem;
 }
 .sapUxAPAnchorBar.sapMTB {
   padding-right: 0;
@@ -1168,6 +1167,7 @@ html .sapUiContainer-Medium .sapUxAPObjectPageHeaderContent .sapUxAPObjectPageHe
   flex-direction: column;
   isolation: isolate;
   z-index: 0;
+  white-space: normal;
 }
 body > .sapUxAPObjectPageLayout,
 .sapUiVltCell .sapUxAPObjectPageLayout {
