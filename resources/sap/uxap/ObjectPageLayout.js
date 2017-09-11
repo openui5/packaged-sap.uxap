@@ -367,6 +367,21 @@ sap.ui.define([
 		}
 	};
 
+	/**
+	 * Retrieves the list of sections to render initially
+	 * (the list includes the sections to be loaded lazily, as these are empty in the beginning, only their skeleton will be rendered)
+	 * @returns the sections list
+	 */
+	ObjectPageLayout.prototype._getSectionsToRender = function () {
+		var oSelectedSection = sap.ui.getCore().byId(this.getSelectedSection());
+
+		if (this.getUseIconTabBar() && oSelectedSection) {
+			return [oSelectedSection]; // only the content for the selected tab should be rendered
+		} else {
+			return this.getSections();
+		}
+	};
+
 	ObjectPageLayout.prototype._preloadSectionsOnBeforeFirstRendering = function () {
 		var aToLoad;
 		if (!this.getEnableLazyLoading()) {
@@ -919,9 +934,9 @@ sap.ui.define([
 			jQuery.sap.log.debug("ObjectPageLayout :: _requestAdjustLayout", "delayed by " + ObjectPageLayout.DOM_CALC_DELAY + " ms because of dom modifications");
 		}
 
-		var aTaskArgs = arguments;
-		Array.prototype.splice.call(aTaskArgs, 0, 2); // the first two are not specific to the task execution, so remove them
-		return this._oLayoutTask.reSchedule(bImmediate, aTaskArgs); // returns promise
+		return this._oLayoutTask.reSchedule(bImmediate, {needLazyLoading: !!bNeedLazyLoading}).catch(function(reason) {
+			// implement catch function to prevent uncaught errors message
+		}); // returns promise
 	};
 
 	/**
@@ -929,9 +944,11 @@ sap.ui.define([
 	 * Should not be called directly, but throttled via ObjectPageLayout.prototype._requestAdjustLayout
 	 * @private
 	 */
-	ObjectPageLayout.prototype._executeAdjustLayout = function (bNeedLazyLoading) { // this is an expensive function and is called often, so should not be called directly, but throttled via ObjectPageLayout.prototype._requestAdjustLayout
+	ObjectPageLayout.prototype._executeAdjustLayout = function (oOptions) { // this is an expensive function and is called often, so should not be called directly, but throttled via ObjectPageLayout.prototype._requestAdjustLayout
 
-		var bSuccess = this._updateScreenHeightSectionBasesAndSpacer();
+		var bNeedLazyLoading = oOptions.needLazyLoading,
+			bSuccess = this._updateScreenHeightSectionBasesAndSpacer();
+
 		if (bSuccess && bNeedLazyLoading) {
 			this._oLazyLoading.doLazyLoading();
 		}
@@ -1158,7 +1175,7 @@ sap.ui.define([
 			bExpandedMode = !this._bStickyAnchorBar;
 
 		if (bExpandedMode && this._isFirstVisibleSectionBase(oTargetSection)) { // preserve expanded header if no need to stick
-			iScrollTo -= this.iHeaderContentHeight; // scroll to the position where the header is still expanded
+			iScrollTo = 0;
 		}
 
 		return iScrollTo;
@@ -1553,7 +1570,7 @@ sap.ui.define([
 
 		var oSectionInfo = this._oSectionInfo[oSection.getId()];
 		if (oSectionInfo) {
-			return oSectionInfo.positionTop === this.iHeaderContentHeight;
+			return Math.abs(oSectionInfo.positionTop - this.iHeaderContentHeight) <= 1;
 		}
 		return false;
 	};

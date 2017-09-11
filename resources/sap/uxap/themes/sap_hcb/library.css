@@ -1054,6 +1054,7 @@ html[data-sap-ui-browser="ie10"] .sapUxAPObjectPageHeaderContentCellLeft {
   -moz-flex-direction: column;
   -ms-flex-direction: column;
   flex-direction: column;
+  white-space: normal;
 }
 body > .sapUxAPObjectPageLayout,
 .sapUiVltCell .sapUxAPObjectPageLayout {
