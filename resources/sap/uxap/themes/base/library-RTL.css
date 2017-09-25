@@ -225,6 +225,9 @@ html .sapUiContainer-Medium .sapUxAPAnchorBar.sapUxAPAnchorBarScrollLeft .anchor
   text-align: left;
   overflow: visible;
 }
+html[dir=rtl] .sapMPopover.sapUxAPAnchorBarPopover button.sapMBtn > .sapMBtnInner > .sapMBtnContent {
+  text-align: right;
+}
 /**********************************
 COZY
 **********************************/
@@ -1526,6 +1529,9 @@ html .sapUiContainer-Medium .sapUxAPObjectPageSubSectionHeader {
 .sapUxAPBlockContainer .sapUiFormResGrid > div.sapUiFormContainerTitle > .sapUiFormTitle {
   line-height: 2rem;
   margin-bottom: 0;
+}
+.sapUxAPBlockContainer .sapUiFormResGrid > .sapUiFormTitle {
+  padding: 0;
 }
 .sapUxAPBlockContainerDesktop {
   padding: 1rem 2rem 3rem 2rem;

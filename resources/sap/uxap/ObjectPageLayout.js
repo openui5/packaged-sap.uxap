@@ -357,6 +357,11 @@ sap.ui.define([
 		// save the *valid* scroll location *after* the UX rules are applied => so that we know *which* sections will comprise the scrollable content
 		this._storeScrollLocation();
 
+		// set the <code>scrollPosition</code> of custom scrollBar back to initial value,
+		// otherwise in the scrollBar's <code>onAfterRendering</code> it will scroll to its last valid <code>scrollPosition</code> => will propagate the scroll to the <code>ObjectPageLayout</code> content container =>
+		// and get in conflict with the scroll of the <code>ObjectPageLayout</code> content container to its own *newly chosen* scroll position
+		this._getCustomScrollBar().setScrollPosition(0);
+
 		// If we are on the first true rendering : first time we render the page with section and blocks
 		if (!jQuery.isEmptyObject(this._oSectionInfo) && this._bFirstRendering) {
 			this._preloadSectionsOnBeforeFirstRendering();
@@ -365,9 +370,24 @@ sap.ui.define([
 
 		this._bStickyAnchorBar = false; //reset default state in case of re-rendering
 
-		var oHeaderTitle = this.getHeaderTitle();
-		if (oHeaderTitle && oHeaderTitle.getAggregation("_expandButton")) {
-			oHeaderTitle.getAggregation("_expandButton").attachPress(this._handleExpandButtonPress, this);
+		// Detach expand button press event
+		this._handleExpandButtonPressEventLifeCycle(false);
+	};
+
+	/**
+	 * Attaches or detaches the "_handleExpandButtonPress" handler to the expand button of the HeaderTitle if available
+	 * @param {boolean} bAttach should the method attach the event
+	 * @private
+	 */
+	ObjectPageLayout.prototype._handleExpandButtonPressEventLifeCycle = function (bAttach) {
+		var oHeaderTitle = this.getHeaderTitle(),
+			oExpandButton;
+
+		if (oHeaderTitle) {
+			oExpandButton = oHeaderTitle.getAggregation("_expandButton");
+			if (oExpandButton) {
+				oExpandButton[bAttach ? "attachPress" : "detachPress"](this._handleExpandButtonPress, this);
+			}
 		}
 	};
 
@@ -379,7 +399,7 @@ sap.ui.define([
 	ObjectPageLayout.prototype._getSectionsToRender = function () {
 		var oSelectedSection = sap.ui.getCore().byId(this.getSelectedSection());
 
-		if (this.getUseIconTabBar() && oSelectedSection) {
+		if (this.getUseIconTabBar() && oSelectedSection && (this.indexOfSection(oSelectedSection) > -1)) {
 			return [oSelectedSection]; // only the content for the selected tab should be rendered
 		} else {
 			return this.getSections();
@@ -434,28 +454,30 @@ sap.ui.define([
 		} else {
 			jQuery.sap.delayedCall(ObjectPageLayout.HEADER_CALC_DELAY, this, this._onAfterRenderingDomReady);
 		}
+
+		// Attach expand button event
+		this._handleExpandButtonPressEventLifeCycle(true);
 	};
 
 	ObjectPageLayout.prototype._onAfterRenderingDomReady = function () {
 		var oSectionToSelect = this._oStoredSection || this._oFirstVisibleSection,
-			sFirstVisibleSectionID, sSectionToSelectID;
+			sSectionToSelectID;
 
 		this._bDomReady = true;
 		this._adjustHeaderHeights();
 
+		this._initAnchorBarScroll();
+
 		if (oSectionToSelect) {
 			sSectionToSelectID = oSectionToSelect.getId();
-			sFirstVisibleSectionID = this._oFirstVisibleSection && this._oFirstVisibleSection.getId();
 
 			if (this.getUseIconTabBar()) {
 				this._setSelectedSectionId(sSectionToSelectID);
 				this._setCurrentTabSection(oSectionToSelect);
-			} else if (sSectionToSelectID !== sFirstVisibleSectionID) {
-				this.scrollToSection(sSectionToSelectID);
+			} else {
+				this.scrollToSection(sSectionToSelectID, 0);
 			}
 		}
-
-		this._initAnchorBarScroll();
 
 		if (sap.ui.Device.system.desktop) {
 			this._$opWrapper.on("scroll", this.onWrapperScroll.bind(this));
@@ -468,7 +490,7 @@ sap.ui.define([
 
 		this._setSectionsFocusValues();
 
-		this._restoreScrollPosition();
+		this._restoreScrollPosition(oSectionToSelect);
 
 		sap.ui.getCore().getEventBus().publish("sap.ui", "ControlForPersonalizationRendered", this);
 
@@ -520,6 +542,12 @@ sap.ui.define([
 		if (this._iContentResizeId) {
 			ResizeHandler.deregister(this._iContentResizeId);
 		}
+
+		// setting these to null is necessary because
+		// some late callbacks may still have access to the page
+		// (and try to process the page) after the page is being destroyed
+		this._oStoredSection = null;
+		this._oFirstVisibleSection = null;
 	};
 
 	ObjectPageLayout.prototype._getCustomScrollBar = function () {
@@ -1192,7 +1220,7 @@ sap.ui.define([
 			bExpandedMode = !this._bStickyAnchorBar;
 
 		if (bExpandedMode && this._isFirstVisibleSectionBase(oTargetSection)) { // preserve expanded header if no need to stick
-			iScrollTo -= this.iHeaderContentHeight; // scroll to the position where the header is still expanded
+			iScrollTo = 0;
 		}
 
 		return iScrollTo;
@@ -1283,7 +1311,7 @@ sap.ui.define([
 		if (this._oScroller) {
 			jQuery.sap.log.debug("ObjectPageLayout :: scrolling to " + y);
 
-			if ((time === 0) && (y >= this._getSnapPosition())) {
+			if ((time === 0) && this._shouldSnapHeaderOnScroll(y)) {
 				this._toggleHeader(true);
 			}
 
@@ -1748,6 +1776,15 @@ sap.ui.define([
 	};
 
 	/**
+	 * Checks if the given <code>scrollTop</code> position requires snap
+	 * @param iScrollTop
+	 * @private
+	 */
+	ObjectPageLayout.prototype._shouldSnapHeaderOnScroll = function (iScrollTop) {
+		return (iScrollTop > 0) && (iScrollTop >= this._getSnapPosition());
+	};
+
+	/**
 	 * called when the user scrolls on the page
 	 * @param oEvent
 	 * @private
@@ -1757,7 +1794,7 @@ sap.ui.define([
 		var iScrollTop = Math.max(oEvent.target.scrollTop, 0), // top of the visible page
 			iPageHeight,
 			oHeader = this.getHeaderTitle(),
-			bShouldStick = (iScrollTop > 0) && (iScrollTop >= this._getSnapPosition()),
+			bShouldStick = this._shouldSnapHeaderOnScroll(iScrollTop),
 			sClosestId,
 			bScrolled = false;
 
@@ -2049,8 +2086,10 @@ sap.ui.define([
 		if (this._$headerTitle.length > 0) {
 			var $headerTitleClone = this._$headerTitle.clone();
 
-			//read the headerContentHeight ---------------------------
-			this.iHeaderContentHeight = this._$headerContent.height();
+			// read the headerContentHeight ---------------------------
+			// Note: we are using getBoundingClientRect on the Dom reference to get the correct height taking into account
+			// possible browser zoom level. For more details BCP: 1780309606
+			this.iHeaderContentHeight = this._$headerContent[0].parentElement ? this._$headerContent[0].getBoundingClientRect().height : 0;
 
 			//read the sticky headerContentHeight ---------------------------
 			this.iStickyHeaderContentHeight = this._$stickyHeaderContent.height();
@@ -2291,8 +2330,29 @@ sap.ui.define([
 		return false;
 	};
 
-	ObjectPageLayout.prototype._restoreScrollPosition = function () {
-		this._scrollTo(this._iStoredScrollPosition, 0);
+	ObjectPageLayout.prototype._isPositionWithinSection = function (iScrollPosition, oSection) {
+		if (!oSection || !this._bDomReady || !this._oSectionInfo[oSection.getId()]) {
+			return;
+		}
+		var iSectionPositionTop = this._computeScrollPosition(oSection),
+			iSectionHeight = jQuery(oSection.getDomRef()).height(),
+			iSectionPositionBottom = iSectionPositionTop + iSectionHeight;
+
+		return ((iScrollPosition >= iSectionPositionTop) && (iScrollPosition < iSectionPositionBottom));
+	};
+
+	/**
+	 * Restores the precise <code>scrollPosition</code> within the selected section
+	 * @param {sap.uxap.ObjectPageSectionBase} oSectionToSelect, the selected section
+	 * @private
+	 */
+	ObjectPageLayout.prototype._restoreScrollPosition = function (oSectionToSelect) {
+
+		// check if the stored <code>_iStoredScrollPosition</code> is still within the selected section
+		// (this may not be the case anymore of the position of sections changed *after* the <code>_iStoredScrollPosition</code> was saved, due to change in height/visibility/removal of some section(s)
+		if (this._isPositionWithinSection(this._iStoredScrollPosition, oSectionToSelect)) {
+			this._scrollTo(this._iStoredScrollPosition, 0);
+		}
 	};
 
 	ObjectPageLayout.prototype._storeScrollLocation = function () {
