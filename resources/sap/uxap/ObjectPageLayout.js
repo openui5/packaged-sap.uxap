@@ -288,6 +288,7 @@ sap.ui.define([
 
 	ObjectPageLayout.prototype.init = function () {
 
+		this.oCore = sap.ui.getCore();
 		// lazy loading
 		this._bFirstRendering = true;
 		this._bDomReady = false;                    //dom is fully ready to be inspected
@@ -348,10 +349,13 @@ sap.ui.define([
 		this._getHeaderContent().setContentDesign(this._getHeaderDesign());
 		this._oABHelper._getAnchorBar().setProperty("upperCase", this.getUpperCaseAnchorBar(), true);
 
+		this._storeScrollLocation(); // store location *before* applying the UXRules (=> while the old sectionInfo with positionTop of sections is still available)
 		this._applyUxRules();
 
-		// save the *valid* scroll location *after* the UX rules are applied => so that we know *which* sections will comprise the scrollable content
-		this._storeScrollLocation();
+		// set the <code>scrollPosition</code> of custom scrollBar back to initial value,
+		// otherwise in the scrollBar's <code>onAfterRendering</code> it will scroll to its last valid <code>scrollPosition</code> => will propagate the scroll to the <code>ObjectPageLayout</code> content container =>
+		// and get in conflict with the scroll of the <code>ObjectPageLayout</code> content container to its own *newly chosen* scroll position
+		this._getCustomScrollBar().setScrollPosition(0);
 
 		// If we are on the first true rendering : first time we render the page with section and blocks
 		if (!jQuery.isEmptyObject(this._oSectionInfo) && this._bFirstRendering) {
@@ -361,10 +365,55 @@ sap.ui.define([
 
 		this._bStickyAnchorBar = false; //reset default state in case of re-rendering
 
-		var oHeaderTitle = this.getHeaderTitle();
-		if (oHeaderTitle && oHeaderTitle.getAggregation("_expandButton")) {
-			oHeaderTitle.getAggregation("_expandButton").attachPress(this._handleExpandButtonPress, this);
+		// Detach expand button press event
+		this._handleExpandButtonPressEventLifeCycle(false);
+	};
+
+	/**
+	 * Attaches or detaches the "_handleExpandButtonPress" handler to the expand button of the HeaderTitle if available
+	 * @param {boolean} bAttach should the method attach the event
+	 * @private
+	 */
+	ObjectPageLayout.prototype._handleExpandButtonPressEventLifeCycle = function (bAttach) {
+		var oHeaderTitle = this.getHeaderTitle(),
+			oExpandButton;
+
+		if (oHeaderTitle) {
+			oExpandButton = oHeaderTitle.getAggregation("_expandButton");
+			if (oExpandButton) {
+				oExpandButton[bAttach ? "attachPress" : "detachPress"](this._handleExpandButtonPress, this);
+			}
 		}
+	};
+
+	ObjectPageLayout.prototype._adjustSelectedSectionByUXRules = function () {
+
+		var oSelectedSection = this.oCore.byId(this.getSelectedSection()),
+		bValidSelectedSection = oSelectedSection && this._sectionCanBeRenderedByUXRules(oSelectedSection);
+		if (!bValidSelectedSection && this._oFirstVisibleSection) {
+			oSelectedSection = this._oFirstVisibleSection; // next candidate
+			this.setAssociation("selectedSection", oSelectedSection.getId(), true);
+		}
+
+		var oStoredSubSection = this.oCore.byId(this._sStoredScrolledSubSectionId),
+			bValidSelectedSubSection = oStoredSubSection
+				&& this._sectionCanBeRenderedByUXRules(oStoredSubSection)
+				&& (oSelectedSection.indexOfSubSection(oStoredSubSection) >= 0);
+		if (!bValidSelectedSubSection) {
+			this._sStoredScrolledSubSectionId = null; // the stored location is not valid anymore (e.g. section was removed/hidden or another section was explicitly selected)
+		}
+	};
+
+	ObjectPageLayout.prototype._sectionCanBeRenderedByUXRules = function (oSection) {
+
+		if (!oSection || !oSection.getVisible() || !oSection._getInternalVisible()) {
+			return false;
+		}
+		var aSectionBasesIds = this._aSectionBases.map(function (oSectionBase) {
+			return oSectionBase.getId();
+		});
+
+		return (aSectionBasesIds.indexOf(oSection.getId()) > -1);
 	};
 
 	/**
@@ -373,7 +422,8 @@ sap.ui.define([
 	 * @returns the sections list
 	 */
 	ObjectPageLayout.prototype._getSectionsToRender = function () {
-		var oSelectedSection = sap.ui.getCore().byId(this.getSelectedSection());
+		this._adjustSelectedSectionByUXRules();
+		var oSelectedSection = this.oCore.byId(this.getSelectedSection());
 
 		if (this.getUseIconTabBar() && oSelectedSection) {
 			return [oSelectedSection]; // only the content for the selected tab should be rendered
@@ -386,7 +436,7 @@ sap.ui.define([
 		var aToLoad;
 		if (!this.getEnableLazyLoading()) {
 			// In case we are not lazy loaded make sure that we connect the blocks properly...
-			aToLoad = this.getUseIconTabBar() ? [sap.ui.getCore().byId(this.getSelectedSection()) || this._oFirstVisibleSection] : this.getSections(); // for iconTabBar, load only the section that corresponds to first tab
+			aToLoad = this._getSectionsToRender(); // load all renderable sections
 
 		} else { //lazy loading, so connect first visible subsections
 			var aSectionBasesToLoad = this.getUseIconTabBar() ? this._grepCurrentTabSectionBases() : this._aSectionBases;
@@ -398,7 +448,10 @@ sap.ui.define([
 
 	ObjectPageLayout.prototype._grepCurrentTabSectionBases = function () {
 		var oFiltered = [],
-			oSectionToLoad = this._oCurrentTabSection || sap.ui.getCore().byId(this.getSelectedSection()) || this._oFirstVisibleSection;
+			oSectionToLoad;
+
+		this._adjustSelectedSectionByUXRules();
+		oSectionToLoad = this.oCore.byId(this.getSelectedSection());
 
 		if (oSectionToLoad) {
 			var sSectionToLoadId = oSectionToLoad.getId();
@@ -430,28 +483,37 @@ sap.ui.define([
 		} else {
 			jQuery.sap.delayedCall(ObjectPageLayout.HEADER_CALC_DELAY, this, this._onAfterRenderingDomReady);
 		}
+
+		// Attach expand button event
+		this._handleExpandButtonPressEventLifeCycle(true);
 	};
 
 	ObjectPageLayout.prototype._onAfterRenderingDomReady = function () {
-		var oSectionToSelect = this._oStoredSection || this._oFirstVisibleSection,
-			sFirstVisibleSectionID, sSectionToSelectID;
+		var sSectionToSelectID, oSectionToSelect;
 
+		if (this._bIsBeingDestroyed) {
+			return;
+		}
+
+		this._adjustSelectedSectionByUXRules(); //validate again as in could have been changed by the app in page's onAfterRendering hook
+		sSectionToSelectID = this.getSelectedSection();
+		oSectionToSelect = this.oCore.byId(sSectionToSelectID);
+
+		this._iAfterRenderingDomReadyTimeout = null;
 		this._bDomReady = true;
 		this._adjustHeaderHeights();
 
-		if (oSectionToSelect) {
-			sSectionToSelectID = oSectionToSelect.getId();
-			sFirstVisibleSectionID = this._oFirstVisibleSection && this._oFirstVisibleSection.getId();
+		this._initAnchorBarScroll();
+
+		if (sSectionToSelectID) {
 
 			if (this.getUseIconTabBar()) {
 				this._setSelectedSectionId(sSectionToSelectID);
 				this._setCurrentTabSection(oSectionToSelect);
-			} else if (sSectionToSelectID !== sFirstVisibleSectionID) {
-				this.scrollToSection(sSectionToSelectID);
+			} else {
+				this.scrollToSection(sSectionToSelectID, 0);
 			}
 		}
-
-		this._initAnchorBarScroll();
 
 		if (sap.ui.Device.system.desktop) {
 			this._$opWrapper.on("scroll", this.onWrapperScroll.bind(this));
@@ -465,6 +527,10 @@ sap.ui.define([
 		this._setSectionsFocusValues();
 
 		this._restoreScrollPosition();
+
+		this.oCore.getEventBus().publish("sap.ui", "ControlForPersonalizationRendered", this);
+
+		this.fireEvent("onAfterRenderingDOMReady");
 	};
 
 	/**
@@ -483,7 +549,7 @@ sap.ui.define([
 	 */
 	ObjectPageLayout.prototype._calculateShiftOffset = function () {
 		var iHeaderOffset = 0,
-			sStyleAttribute = sap.ui.getCore().getConfiguration().getRTL() ? "left" : "right",
+			sStyleAttribute = this.oCore.getConfiguration().getRTL() ? "left" : "right",
 			bHasVerticalScroll = this._hasVerticalScrollBar(),
 			iActionsOffset = this._iOffset;
 
@@ -510,6 +576,11 @@ sap.ui.define([
 		if (this._iContentResizeId) {
 			ResizeHandler.deregister(this._iContentResizeId);
 		}
+
+		// setting these to null is necessary because
+		// some late callbacks may still have access to the page
+		// (and try to process the page) after the page is being destroyed
+		this._oFirstVisibleSection = null;
 	};
 
 	ObjectPageLayout.prototype._getCustomScrollBar = function () {
@@ -601,19 +672,44 @@ sap.ui.define([
 		});
 	};
 
-	ObjectPageLayout.prototype.setSelectedSection = function (sSectionId) {
+	/**
+	 * Sets the section that should be selected.
+	 *
+	 * The section can either be given by itself or by its id.
+	 *
+	 * Note that <code>null</code> or <code>undefined</code> are not valid arguments and will be discarded.
+	 * This is because the <code>sap.uxap.ObjectPageLayout</code> should always have one of its sections selected (unless it has 0 sections).
+	 *
+	 * @param {string | sap.uxap.ObjectPageSection}
+	 *            sId the ID of the section that should be selected
+	 *            vSection the section that should be selected
+	 *            Note that <code>null</code> or <code>undefined</code> are not valid arguments
+	 * @return {sap.uxap.ObjectPageLayout} Returns <code>this</code> to allow method chaining
+	 * @public
+	 */
+	ObjectPageLayout.prototype.setSelectedSection = function (vSection) {
+		var sSelectedSectionId;
 
-		if (!sap.ui.getCore().byId(sSectionId)) {
-			jQuery.sap.log.warning("setSelectedSection aborted: unknown section", sSectionId, this);
+		if (vSection instanceof ObjectPageSection) {
+			sSelectedSectionId = vSection.getId();
+		} else if (typeof vSection === "string") {
+			sSelectedSectionId = vSection;
+		}
+
+		if (!sSelectedSectionId) {
+			("section or sectionID expected");
+			return;
+		}
+
+		if (sSelectedSectionId === this.getSelectedSection()){
 			return this;
 		}
 
-		var sOldValue = this.getSelectedSection();
-		if (sSectionId === sOldValue) {
-			return this;
-		}
-		this.scrollToSection(sSectionId);
-		return this.setAssociation("selectedSection", sSectionId, true);
+		this.scrollToSection(sSelectedSectionId);
+		//note there was no validation whether oSection was child of ObjectPage/visible/non-empty,
+		//because at the point of calling this setter, the sections setup may not be complete yet
+		//but we still need to save the selectedSection value
+		return this.setAssociation("selectedSection", sSelectedSectionId, true);
 	};
 
 	/**
@@ -872,7 +968,7 @@ sap.ui.define([
 			oRm;
 
 		if (oSection && $objectPageContainer.length) {
-			oRm = sap.ui.getCore().createRenderManager();
+			oRm = this.oCore.createRenderManager();
 			oRm.renderControl(oSection);
 			oRm.flush($objectPageContainer[0]); // place the section in the ObjectPageContainer
 			oRm.destroy();
@@ -962,37 +1058,45 @@ sap.ui.define([
 	 */
 
 	ObjectPageLayout.prototype._adjustLayoutAndUxRules = function () {
+
+		var sSelectedSectionId,
+			oSelectedSection;
+
 		//in case we have added a section or subSection which change the ux rules
 		jQuery.sap.log.debug("ObjectPageLayout :: _requestAdjustLayout", "refreshing ux rules");
 
-		/* obtain the currently selected section in the navBar before navBar is destroyed,
-		 in order to reselect that section after that navBar is reconstructed */
-		var sSelectedSectionId = this._getSelectedSectionId(),
-			oSelectedSection = sap.ui.getCore().byId(sSelectedSectionId),
-			bSelectionChanged = false;
-
 		this._applyUxRules(true);
 
-		/* check if the section that was previously selected is still available,
+		/* reset the selected section,
+		 as the previously selected section may not be available anymore,
 		 as it might have been deleted, or emptied, or set to hidden in the previous step */
-		if (!oSelectedSection || !oSelectedSection.getVisible() || !oSelectedSection._getInternalVisible()) {
-			oSelectedSection = this._oFirstVisibleSection;
-			sSelectedSectionId = oSelectedSection && oSelectedSection.getId();
-			bSelectionChanged = true;
-		}
+		this._adjustSelectedSectionByUXRules();
+		sSelectedSectionId = this.getSelectedSection();
+		oSelectedSection = this.oCore.byId(sSelectedSectionId);
 
 		if (oSelectedSection) {
-			this._setSelectedSectionId(sSelectedSectionId); //reselect the current section in the navBar
+			this._setSelectedSectionId(sSelectedSectionId); //reselect the current section in the navBar (because the anchorBar was freshly rebuilt from scratch)
 			if (this.getUseIconTabBar()) {
 				this._setCurrentTabSection(oSelectedSection);
 			}
 			this._requestAdjustLayout(null, false, true /* requires a check on lazy loading */)
-				.then(function () { // scrolling must be done after the layout adjustment is done (so the section positions are determined)
-					if (bSelectionChanged) {
+				.then(function () { // scrolling must be done after the layout adjustment is done (so the latest section positions are determined)
+					this._adjustSelectedSectionByUXRules(); //section may have changed again from the app before the promise completed => ensure adjustment
+					sSelectedSectionId = this.getSelectedSection();
+					if (!this._isClosestScrolledSection(sSelectedSectionId)) {
+						// then change the selection to match the correct section
 						this.scrollToSection(sSelectedSectionId);
 					}
 				}.bind(this));
 		}
+	};
+
+	ObjectPageLayout.prototype._isClosestScrolledSection = function (sSectionId) {
+		var iScrollTop = this._$opWrapper.scrollTop(),
+			iPageHeight = this.iScreenHeight,
+			sClosestSectionId = this._getClosestScrolledSectionId(iScrollTop, iPageHeight);
+
+		return sClosestSectionId && (sSectionId === sClosestSectionId);
 	};
 
 	ObjectPageLayout.prototype._getSelectedSectionId = function () {
@@ -1072,7 +1176,7 @@ sap.ui.define([
 	 * @ui5-metamodel This method also will be described in the UI5 (legacy) designtime metamodel
 	 */
 	ObjectPageLayout.prototype.scrollToSection = function (sId, iDuration, iOffset, bIsTabClicked) {
-		var oSection = sap.ui.getCore().byId(sId);
+		var oSection = this.oCore.byId(sId);
 
 		if (!this.getDomRef()){
 			jQuery.sap.log.warning("scrollToSection can only be used after the ObjectPage is rendered", this);
@@ -1257,10 +1361,10 @@ sap.ui.define([
 	 * @private
 	 */
 	ObjectPageLayout.prototype._scrollTo = function (y, time) {
-		if (this._oScroller) {
+		if (this._oScroller && this._bDomReady) {
 			jQuery.sap.log.debug("ObjectPageLayout :: scrolling to " + y);
 
-			if ((time === 0) && (y >= this._getSnapPosition())) {
+			if ((time === 0) && this._shouldSnapHeaderOnScroll(y)) {
 				this._toggleHeader(true);
 			}
 
@@ -1279,15 +1383,20 @@ sap.ui.define([
 			iSpacerHeight,
 			sPreviousSubSectionId,
 			sPreviousSectionId,
-			bAllowSnap;
+			bAllowSnap,
+			$domRef = this.getDomRef();
 
-		if (!this._bDomReady) { //calculate the layout only if the object page is full ready
+		if (!$domRef || !this._bDomReady) { //calculate the layout only if the object page is full ready
 			return false; // return success flag
 		}
 
 		jQuery.sap.log.debug("ObjectPageLayout :: _updateScreenHeightSectionBasesAndSpacer", "re-evaluating dom positions");
 
-		this.iScreenHeight = this.$().height();
+		this.iScreenHeight = $domRef.parentElement ? $domRef.getBoundingClientRect().height : 0;
+
+		if (this.iScreenHeight === 0) {
+			return; // element is hidden or not in DOM => the resulting calculations would be invalid
+		}
 		var iSubSectionsCount = 0;
 
 		this._aSectionBases.forEach(function (oSectionBase) {
@@ -1596,11 +1705,18 @@ sap.ui.define([
 	 */
 	ObjectPageLayout.prototype._initAnchorBarScroll = function () {
 
+		var oSelectedSection = this.oCore.byId(this.getSelectedSection()),
+			iScrollTop;
+
 		this._requestAdjustLayout(null, true);
 
-		//reset the scroll to top for anchorbar & scrolling management
+		iScrollTop = oSelectedSection ? this._computeScrollPosition(oSelectedSection) : 0;
+
+		//reset the scroll for anchorbar & scrolling management
 		this._sScrolledSectionId = "";
-		this._onScroll({target: {scrollTop: 0}});//make sure we got the very last scroll event even on slow devices
+		this._sCurrentScrollId = "";
+		this._onScroll({target: {scrollTop: iScrollTop}});//make sure that the handler for the scroll event is called
+		// because only when the handler for the scroll event is called => the selectedSection is set as currentSection => selected section is selected in the anchorBar)
 	};
 
 	/**
@@ -1621,7 +1737,7 @@ sap.ui.define([
 		oAnchorBar = this.getAggregation("_anchorBar");
 
 		if (oAnchorBar && this._getInternalAnchorBarVisible()) {
-			oSectionBase = sap.ui.getCore().byId(sSectionId);
+			oSectionBase = this.oCore.byId(sSectionId);
 
 			bShouldDisplayParentTitle = oSectionBase && oSectionBase instanceof ObjectPageSubSection &&
 				(oSectionBase.getTitle().trim() === "" || !oSectionBase._getInternalTitleVisible() || oSectionBase.getParent()._getIsHidden());
@@ -1673,11 +1789,13 @@ sap.ui.define([
 			.then(function () {
 				iScrollTop = this._$opWrapper.scrollTop();
 				iPageHeight = this.iScreenHeight;
+				if (iPageHeight === 0) {
+					return; // page is hidden and further computation will produce invalid results
+				}
 				sClosestSectionId = this._getClosestScrolledSectionId(iScrollTop, iPageHeight);
-				sSelectedSectionId = this._getSelectedSectionId();
+				sSelectedSectionId = this.getSelectedSection();
 
-
-				if (sSelectedSectionId !== sClosestSectionId) { // if the currently visible section is not the currently selected section in the anchorBar
+				if (sClosestSectionId && sSelectedSectionId !== sClosestSectionId) { // if the currently visible section is not the currently selected section in the anchorBar
 					// then change the selection to match the correct section
 					this.getAggregation("_anchorBar").setSelectedButton(this._oSectionInfo[sClosestSectionId].buttonId);
 				}
@@ -1720,6 +1838,15 @@ sap.ui.define([
 	};
 
 	/**
+	 * Checks if the given <code>scrollTop</code> position requires snap
+	 * @param iScrollTop
+	 * @private
+	 */
+	ObjectPageLayout.prototype._shouldSnapHeaderOnScroll = function (iScrollTop) {
+		return (iScrollTop > 0) && (iScrollTop >= this._getSnapPosition());
+	};
+
+	/**
 	 * called when the user scrolls on the page
 	 * @param oEvent
 	 * @private
@@ -1729,12 +1856,15 @@ sap.ui.define([
 		var iScrollTop = Math.max(oEvent.target.scrollTop, 0), // top of the visible page
 			iPageHeight,
 			oHeader = this.getHeaderTitle(),
-			bShouldStick = (iScrollTop > 0) && (iScrollTop >= this._getSnapPosition()),
+			bShouldStick = this._shouldSnapHeaderOnScroll(iScrollTop),
 			sClosestId,
 			bScrolled = false;
 
 		//calculate the limit of visible sections to be lazy loaded
 		iPageHeight = this.iScreenHeight;
+		if (iPageHeight === 0) {
+			return; // page is hidden
+		}
 		if (bShouldStick && !this._bHContentAlwaysExpanded) {
 			iPageHeight -= (this.iAnchorBarHeight + this.iHeaderTitleHeightStickied);
 		} else {
@@ -1818,21 +1948,30 @@ sap.ui.define([
 		return (this.iHeaderContentHeight - (this.iHeaderTitleHeightStickied - this.iHeaderTitleHeight));
 	};
 
-	ObjectPageLayout.prototype._getClosestScrolledSectionId = function (iScrollTop, iPageHeight) {
+	ObjectPageLayout.prototype._getClosestScrolledSectionId = function (iScrollTop, iPageHeight, bSubSectionsOnly) {
 
 		if (this.getUseIconTabBar() && this._oCurrentTabSection) {
 			return this._oCurrentTabSection.getId();
 		}
 
 		var iScrollPageBottom = iScrollTop + iPageHeight,                 //the bottom limit
-			sClosestId;
+			sClosestId,
+			bTraverseSubSections = bSubSectionsOnly || this._bMobileScenario;
 
 		jQuery.each(this._oSectionInfo, function (sId, oInfo) {
 			// on desktop/tablet, skip subsections
-			if (oInfo.isSection || this._bMobileScenario) {
+			// BCP 1680331690. Should skip subsections that are in a section with lower importance, which makes them hidden.
+			var sectionParent = this.oCore.byId(sId).getParent(),
+				isParentHiddenSection = sectionParent instanceof ObjectPageSection && sectionParent._getIsHidden();
+
+			if (oInfo.isSection || (bTraverseSubSections && !isParentHiddenSection)) {
 				//we need to set the sClosest to the first section for handling the scrollTop = 0
 				if (!sClosestId && (oInfo.sectionReference._getInternalVisible() === true)) {
 					sClosestId = sId;
+				}
+
+				if (oInfo.isSection && !!bSubSectionsOnly) {
+					return true;
 				}
 
 				// current section/subsection is inside the view port
@@ -2022,8 +2161,10 @@ sap.ui.define([
 		if (this._$headerTitle.length > 0) {
 			var $headerTitleClone = this._$headerTitle.clone();
 
-			//read the headerContentHeight ---------------------------
-			this.iHeaderContentHeight = this._$headerContent.height();
+			// read the headerContentHeight ---------------------------
+			// Note: we are using getBoundingClientRect on the Dom reference to get the correct height taking into account
+			// possible browser zoom level. For more details BCP: 1780309606
+			this.iHeaderContentHeight = this._$headerContent[0].parentElement ? this._$headerContent[0].getBoundingClientRect().height : 0;
 
 			//read the sticky headerContentHeight ---------------------------
 			this.iStickyHeaderContentHeight = this._$stickyHeaderContent.height();
@@ -2260,25 +2401,50 @@ sap.ui.define([
 		return false;
 	};
 
-	ObjectPageLayout.prototype._restoreScrollPosition = function () {
-		this._scrollTo(this._iStoredScrollPosition, 0);
+	ObjectPageLayout.prototype._isPositionWithinSection = function (iScrollPosition, oSection) {
+		if (!oSection || !this._bDomReady || !this._oSectionInfo[oSection.getId()]) {
+			return;
+		}
+		var iSectionPositionTop = this._computeScrollPosition(oSection),
+			iSectionHeight = jQuery(oSection.getDomRef()).height(),
+			iSectionPositionBottom = iSectionPositionTop + iSectionHeight;
+
+		return ((iScrollPosition >= iSectionPositionTop) && (iScrollPosition < iSectionPositionBottom));
 	};
 
-	ObjectPageLayout.prototype._storeScrollLocation = function () {
-		this._iStoredScrollPosition = this._oScroller.getScrollTop();
-		this._oStoredSection = this._oCurrentTabSubSection || this._oCurrentTabSection || sap.ui.getCore().byId(this.getSelectedSection());
+	/**
+	 * Restores the more precise <code>scrollPosition</code> within the selected section
+	 * @param {sap.uxap.ObjectPageSectionBase} oSectionToSelect, the selected section
+	 * @private
+	 */
+	ObjectPageLayout.prototype._restoreScrollPosition = function () {
 
-		// If there was a stored section, check if it still exists and if not - set it to null
-		// Note: not only sections, but subsections should be checked as well - hence this._aSectionBases is used
-		if (this._oStoredSection) {
-			var aSectionBasesIds = this._aSectionBases.map(function (oSectionBase) {
-				return oSectionBase.getId();
-			});
+		var oStoredScrolledSubSection = this.oCore.byId(this._sStoredScrolledSubSectionId);
 
-			if (aSectionBasesIds.indexOf(this._oStoredSection.getId()) === -1) {
-				this._oStoredSection = null;
-			}
+		if (!oStoredScrolledSubSection) {
+			return;
 		}
+
+		// check if the stored <code>_iStoredScrollPosition</code> is still within the selected section
+		// (this may not be the case anymore of the position of sections changed *after* the <code>_iStoredScrollPosition</code> was saved, due to change in height/visibility/removal of some section(s)
+		if (this._isPositionWithinSection(this._iStoredScrollPosition, oStoredScrolledSubSection)) {
+			this._scrollTo(this._iStoredScrollPosition, 0);
+		} else {
+			this.scrollToSection(oStoredScrolledSubSection.getId(), 0);
+		}
+	};
+
+	/**
+	 * Stores the more precise <code>scrollPosition</code> within the selected section
+	 * @private
+	 */
+	ObjectPageLayout.prototype._storeScrollLocation = function () {
+
+		if (!this._bDomReady) {
+			return;
+		}
+		this._iStoredScrollPosition = this._oScroller.getScrollTop(); //TODO: compute the position RELATIVE to the subsection
+		this._sStoredScrolledSubSectionId = this._getClosestScrolledSectionId(this._oScroller.getScrollTop(), this.iScreenHeight, true /* subSections only */);
 
 		this._oCurrentTabSection = null;
 	};
@@ -2288,8 +2454,8 @@ sap.ui.define([
 			oFocusedControl;
 
 		if (oEvent.which === jQuery.sap.KeyCodes.TAB) {
-			oFocusedControlId = sap.ui.getCore().getCurrentFocusedControlId();
-			oFocusedControl = oFocusedControlId && sap.ui.getCore().byId(oFocusedControlId);
+			oFocusedControlId = this.oCore.getCurrentFocusedControlId();
+			oFocusedControl = oFocusedControlId && this.oCore.byId(oFocusedControlId);
 
 			if (oFocusedControl && this._isFirstSection(oFocusedControl)) {
 				this._scrollTo(0, 0);
@@ -2310,7 +2476,7 @@ sap.ui.define([
 	 * @private
 	 */
 	ObjectPageLayout.prototype._toggleFooter = function (bShow) {
-        var bUseAnimations = sap.ui.getCore().getConfiguration().getAnimation(),
+        var bUseAnimations = this.oCore.getConfiguration().getAnimation(),
             oFooter = this.getFooter();
 
 		if (!exists(oFooter)) {
