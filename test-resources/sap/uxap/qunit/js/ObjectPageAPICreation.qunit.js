@@ -438,7 +438,62 @@
 		oPage.attachEvent("onAfterRenderingDOMReady", fnOnDomReady);
 	});
 
-	QUnit.test("select another section after rendering completed", function (assert) {
+	QUnit.test("select another section on before page rendering", function (assert) {
+
+		var oPage = helpers.generateObjectPageWithSubSectionContent(oFactory, 3, 2, true),
+			oSecondSection = oPage.getSections()[1],
+			done = assert.async(),
+			fnOnDomReady = function() {
+				var oExpected = {
+					oSelectedSection: oSecondSection,
+					sSelectedTitle: oSecondSection.getTitle()
+				};
+
+				//check
+				setTimeout(function() {
+					sectionIsSelected(oPage, assert, oExpected);
+
+					oPage.destroy();//cleanup
+					done();
+				}, 0);
+			};
+
+		oPage.addEventDelegate({onBeforeRendering: function() {
+			oPage.setSelectedSection(oSecondSection.getId());
+		}});
+		oPage.attachEventOnce("onAfterRenderingDOMReady", fnOnDomReady);
+		oPage.placeAt("qunit-fixture");
+	});
+
+	QUnit.test("select another section on after page rendering", function (assert) {
+		var oPage = this.oObjectPage,
+			oSecondSection = oPage.getSections()[1],
+			done = assert.async(),
+			iRenderCount = 0,
+			fnOnDomReady = function() {
+				iRenderCount++;
+				if (iRenderCount === 1) { // the page is invalidated during rendering (anchor bar manipulations) => the final rendering is needed for the test
+					return;
+				}
+				var oExpected = {
+					oSelectedSection: oSecondSection,
+					sSelectedTitle: oSecondSection.getTitle()
+				};
+
+				//check
+				setTimeout(function() {
+					sectionIsSelected(oPage, assert, oExpected);
+					done();
+				}, 0);
+			};
+
+		oPage.addEventDelegate({onAfterRendering: function() {
+			oPage.setSelectedSection(oSecondSection.getId());
+		}});
+		oPage.attachEvent("onAfterRenderingDOMReady", fnOnDomReady);
+	});
+
+	QUnit.test("select another section after dom rendering completed", function (assert) {
 		var oPage = this.oObjectPage,
 			oSecondSection = oPage.getSections()[1],
 			done = assert.async(),
@@ -611,6 +666,55 @@
 		sap.ui.getCore().applyChanges();
 
 		oObjectPage.attachEvent("onAfterRenderingDOMReady", fnOnDomReady);
+	});
+
+	QUnit.test("section modified during layout calculation", function (assert) {
+
+		var oPage = this.oObjectPage,
+			oFirstSection = oPage.getSections()[0],
+			oThirdSection = oPage.getSections()[2],
+			bTabsMode = oPage.getUseIconTabBar(),
+			done = assert.async(),
+			fnOnDomReady = function() {
+				//act
+				oFirstSection.setVisible(false); // will trigger async request to adjust layout
+				oPage.setSelectedSection(oThirdSection.getId());
+
+				var oExpected = {
+					oSelectedSection: oThirdSection,
+					sSelectedTitle: oThirdSection.getTitle(),
+					bSnapped: !bTabsMode
+				};
+
+				//check
+				setTimeout(function() {
+					sectionIsSelected(oPage, assert, oExpected);
+					done();
+				}, 0);
+			};
+		oPage.attachEventOnce("onAfterRenderingDOMReady", fnOnDomReady);
+	});
+
+	QUnit.test("_isClosestScrolledSection", function (assert) {
+
+		var oPage = this.oObjectPage,
+			oFirstSection = oPage.getSections()[0],
+			oThirdSection = oPage.getSections()[2],
+			done = assert.async(),
+			fnOnDomReady = function() {
+
+				//check
+				assert.strictEqual(oPage._isClosestScrolledSection(oFirstSection.getId()), true, "first section is currently scrolled");
+
+				oPage.setSelectedSection(oThirdSection.getId());
+
+				//check
+				setTimeout(function() {
+					assert.strictEqual(oPage._isClosestScrolledSection(oThirdSection.getId()), true, "third section is currently scrolled");
+					done();
+				}, 0);
+			};
+		oPage.attachEventOnce("onAfterRenderingDOMReady", fnOnDomReady);
 	});
 
 	QUnit.module("ObjectPage API: sectionTitleLevel");
