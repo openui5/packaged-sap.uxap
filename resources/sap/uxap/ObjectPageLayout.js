@@ -398,19 +398,26 @@ sap.ui.define([
 		}
 	};
 
-	ObjectPageLayout.prototype._adjustSelectedSectionByUXRules = function () {
 
+	ObjectPageLayout.prototype._adjustSelectedSectionByUXRules = function () {
 		var oSelectedSection = this.oCore.byId(this.getSelectedSection()),
-		bValidSelectedSection = oSelectedSection && this._sectionCanBeRenderedByUXRules(oSelectedSection);
-		if (!bValidSelectedSection && this._oFirstVisibleSection) {
-			oSelectedSection = this._oFirstVisibleSection; // next candidate
-			this.setAssociation("selectedSection", oSelectedSection.getId(), true);
+			bValidSelectedSection = oSelectedSection && this._sectionCanBeRenderedByUXRules(oSelectedSection);
+
+		if (!bValidSelectedSection) {
+			if (this._oFirstVisibleSection) {
+				oSelectedSection = this._oFirstVisibleSection; // next candidate
+				this.setAssociation("selectedSection", oSelectedSection.getId(), true);
+			} else {
+				this.setAssociation("selectedSection", null, true);
+				return; // skip further computation as there is no a section to be selected
+			}
 		}
 
 		var oStoredSubSection = this.oCore.byId(this._sStoredScrolledSubSectionId),
 			bValidSelectedSubSection = oStoredSubSection
 				&& this._sectionCanBeRenderedByUXRules(oStoredSubSection)
-				&& (oSelectedSection.indexOfSubSection(oStoredSubSection) < 0);
+				&& (oSelectedSection.indexOfSubSection(oStoredSubSection) >= 0);
+
 		if (!bValidSelectedSubSection) {
 			this._sStoredScrolledSubSectionId = null; // the stored location is not valid anymore (e.g. section was removed/hidden or another section was explicitly selected)
 		}
@@ -1062,41 +1069,44 @@ sap.ui.define([
 			return;
 		}
 
+		var sSelectedSectionId,
+			oSelectedSection;
+
 		//in case we have added a section or subSection which change the ux rules
 		jQuery.sap.log.debug("ObjectPageLayout :: _requestAdjustLayout", "refreshing ux rules");
 
-		/* obtain the currently selected section in the navBar before navBar is destroyed,
-		 in order to reselect that section after that navBar is reconstructed */
-		var sSelectedSectionIdBeforeUXRules = this.getSelectedSection(),
-			sSelectedSectionIdAfterUXRules,
-			oSelectedSection = this.oCore.byId(sSelectedSectionIdBeforeUXRules),
-			bSelectionChanged = false;
-
 		this._applyUxRules(true);
 
-		/* check if the section that was previously selected is still available,
+		/* reset the selected section,
+		 as the previously selected section may not be available anymore,
 		 as it might have been deleted, or emptied, or set to hidden in the previous step */
 		this._adjustSelectedSectionByUXRules();
-
-		sSelectedSectionIdAfterUXRules = this.getSelectedSection();
-
-		if (sSelectedSectionIdAfterUXRules !== sSelectedSectionIdBeforeUXRules) {
-			bSelectionChanged = true;
-			oSelectedSection = this.oCore.byId(sSelectedSectionIdAfterUXRules);
-		}
+		sSelectedSectionId = this.getSelectedSection();
+		oSelectedSection = this.oCore.byId(sSelectedSectionId);
 
 		if (oSelectedSection) {
-			this._setSelectedSectionId(sSelectedSectionIdAfterUXRules); //reselect the current section in the navBar (because the anchorBar was freshly rebuilt from scratch)
+			this._setSelectedSectionId(sSelectedSectionId); //reselect the current section in the navBar (because the anchorBar was freshly rebuilt from scratch)
 			if (this.getUseIconTabBar()) {
 				this._setCurrentTabSection(oSelectedSection);
 			}
 			this._requestAdjustLayout(null, false, true /* requires a check on lazy loading */)
-				.then(function () { // scrolling must be done after the layout adjustment is done (so the section positions are determined)
-					if (bSelectionChanged) {
-						this.scrollToSection(sSelectedSectionIdAfterUXRules);
+				.then(function () { // scrolling must be done after the layout adjustment is done (so the latest section positions are determined)
+					this._adjustSelectedSectionByUXRules(); //section may have changed again from the app before the promise completed => ensure adjustment
+					sSelectedSectionId = this.getSelectedSection();
+					if (!this._isClosestScrolledSection(sSelectedSectionId)) {
+						// then change the selection to match the correct section
+						this.scrollToSection(sSelectedSectionId);
 					}
 				}.bind(this));
 		}
+	};
+
+	ObjectPageLayout.prototype._isClosestScrolledSection = function (sSectionId) {
+		var iScrollTop = this._$opWrapper.scrollTop(),
+			iPageHeight = this.iScreenHeight,
+			sClosestSectionId = this._getClosestScrolledSectionId(iScrollTop, iPageHeight);
+
+		return sClosestSectionId && (sSectionId === sClosestSectionId);
 	};
 
 	/**
@@ -1409,15 +1419,20 @@ sap.ui.define([
 			iSpacerHeight,
 			sPreviousSubSectionId,
 			sPreviousSectionId,
-			bAllowSnap;
+			bAllowSnap,
+			$domRef = this.getDomRef();
 
-		if (!this._bDomReady) { //calculate the layout only if the object page is full ready
+		if (!$domRef || !this._bDomReady) { //calculate the layout only if the object page is full ready
 			return false; // return success flag
 		}
 
 		jQuery.sap.log.debug("ObjectPageLayout :: _updateScreenHeightSectionBasesAndSpacer", "re-evaluating dom positions");
 
-		this.iScreenHeight = this.$().height();
+		this.iScreenHeight = $domRef.parentElement ? $domRef.getBoundingClientRect().height : 0;
+
+		if (this.iScreenHeight === 0) {
+			return; // element is hidden or not in DOM => the resulting calculations would be invalid
+		}
 		var iSubSectionsCount = 0;
 
 		this._aSectionBases.forEach(function (oSectionBase) {
@@ -1816,6 +1831,9 @@ sap.ui.define([
 			.then(function () {
 				iScrollTop = this._$opWrapper.scrollTop();
 				iPageHeight = this.iScreenHeight;
+				if (iPageHeight === 0) {
+					return; // page is hidden and further computation will produce invalid results
+				}
 				sClosestSectionId = this._getClosestScrolledSectionId(iScrollTop, iPageHeight);
 				sSelectedSectionId = this.getSelectedSection();
 
@@ -1885,6 +1903,9 @@ sap.ui.define([
 
 		//calculate the limit of visible sections to be lazy loaded
 		iPageHeight = this.iScreenHeight;
+		if (iPageHeight === 0) {
+			return; // page is hidden
+		}
 		if (bShouldStick && !this._bHContentAlwaysExpanded) {
 			iPageHeight -= (this.iAnchorBarHeight + this.iHeaderTitleHeightStickied);
 		} else {

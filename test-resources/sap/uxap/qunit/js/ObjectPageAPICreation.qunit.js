@@ -461,7 +461,7 @@
 		oPage.addEventDelegate({onBeforeRendering: function() {
 			oPage.setSelectedSection(oSecondSection.getId());
 		}});
-		oPage.attachEvent("onAfterRenderingDOMReady", fnOnDomReady);
+		oPage.attachEventOnce("onAfterRenderingDOMReady", fnOnDomReady);
 		oPage.placeAt("qunit-fixture");
 	});
 
@@ -665,6 +665,55 @@
 		sap.ui.getCore().applyChanges();
 
 		oObjectPage.attachEvent("onAfterRenderingDOMReady", fnOnDomReady);
+	});
+
+	QUnit.test("section modified during layout calculation", function (assert) {
+
+		var oPage = this.oObjectPage,
+			oFirstSection = oPage.getSections()[0],
+			oThirdSection = oPage.getSections()[2],
+			bTabsMode = oPage.getUseIconTabBar(),
+			done = assert.async(),
+			fnOnDomReady = function() {
+				//act
+				oFirstSection.setVisible(false); // will trigger async request to adjust layout
+				oPage.setSelectedSection(oThirdSection.getId());
+
+				var oExpected = {
+					oSelectedSection: oThirdSection,
+					sSelectedTitle: oThirdSection.getTitle(),
+					bSnapped: !bTabsMode
+				};
+
+				//check
+				setTimeout(function() {
+					sectionIsSelected(oPage, assert, oExpected);
+					done();
+				}, 0);
+			};
+		oPage.attachEventOnce("onAfterRenderingDOMReady", fnOnDomReady);
+	});
+
+	QUnit.test("_isClosestScrolledSection", function (assert) {
+
+		var oPage = this.oObjectPage,
+			oFirstSection = oPage.getSections()[0],
+			oThirdSection = oPage.getSections()[2],
+			done = assert.async(),
+			fnOnDomReady = function() {
+
+				//check
+				assert.strictEqual(oPage._isClosestScrolledSection(oFirstSection.getId()), true, "first section is currently scrolled");
+
+				oPage.setSelectedSection(oThirdSection.getId());
+
+				//check
+				setTimeout(function() {
+					assert.strictEqual(oPage._isClosestScrolledSection(oThirdSection.getId()), true, "third section is currently scrolled");
+					done();
+				}, 0);
+			};
+		oPage.attachEventOnce("onAfterRenderingDOMReady", fnOnDomReady);
 	});
 
 	QUnit.module("ObjectPage API: sectionTitleLevel");
@@ -1020,6 +1069,59 @@
 				});
 			}
 		});
+	});
+
+	QUnit.module("ObjectPage API: sections removal", {
+		beforeEach: function () {
+			this.iDelay = 500;
+			this.oSelectedSection = oFactory.getSection(2, null, [
+				oFactory.getSubSection(2, [oFactory.getBlocks(), oFactory.getBlocks()], null)
+			]);
+
+			this.oOP = oFactory.getObjectPage();
+			this.oOP.addSection(oFactory.getSection(1, null, [
+				oFactory.getSubSection(1, [oFactory.getBlocks(), oFactory.getBlocks()], null)
+			])).addSection(this.oSelectedSection)
+				.setSelectedSection(this.oSelectedSection.getId());
+
+			this.oOP.placeAt("qunit-fixture");
+		},
+		afterEach: function () {
+			this.oOP.destroy();
+			this.oOP = null;
+			this.oSelectedSection.destroy();
+			this.oSelectedSection = null;
+		}
+	});
+
+	QUnit.test("test removeAllSections should reset selectedSection", function (assert) {
+		var oObjectPage = this.oOP,
+			done = assert.async();
+
+		// Act
+		oObjectPage.removeAllSections();
+		sap.ui.getCore().applyChanges();
+
+		setTimeout(function () {
+			assert.equal(oObjectPage.getSections().length, 0, "There are no sections.");
+			assert.equal(oObjectPage.getSelectedSection(), null, "Selected section is null as there are no sections.");
+			done();
+		},  this.iDelay);
+	});
+
+	QUnit.test("test destroySections should reset selectedSection", function (assert) {
+		var oObjectPage = this.oOP,
+			done = assert.async();
+
+		// Act
+		oObjectPage.destroySections();
+		sap.ui.getCore().applyChanges();
+
+		setTimeout(function () {
+			assert.equal(oObjectPage.getSections().length, 0, "There are no sections.");
+			assert.equal(oObjectPage.getSelectedSection(), null, "Selected section is null as there are no sections.");
+			done();
+		}, this.iDelay);
 	});
 
 	function checkObjectExists(sSelector) {
