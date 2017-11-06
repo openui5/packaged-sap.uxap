@@ -1285,7 +1285,6 @@ html[data-sap-ui-animation='on'] .sapUxAPObjectPageLayout .sapUxAPObjectPageFloa
 }
 @keyframes bounceShow {
   0% {
-    -webkit-transform: translateY(100%);
     transform: translateY(100%);
     opacity: 0;
   }
@@ -1307,12 +1306,10 @@ html[data-sap-ui-animation='on'] .sapUxAPObjectPageLayout .sapUxAPObjectPageFloa
 }
 @keyframes bounceHide {
   0% {
-    -webkit-transform: translateY(-5%);
     transform: translateY(-5%);
     opacity: 1;
   }
   100% {
-    -webkit-transform: translateY(100%);
     transform: translateY(100%);
     opacity: 0;
   }
