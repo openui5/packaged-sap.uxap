@@ -21,6 +21,7 @@ sap.ui.define(["sap/ui/Device"],
 				bIsHeaderContentVisible = oControl.getHeaderContent() && oControl.getHeaderContent().length > 0 && oControl.getShowHeaderContent(),
 				bIsTitleInHeaderContent = oControl.getShowTitleInHeaderContent() && oControl.getShowHeaderContent(),
 				bRenderHeaderContent = bIsHeaderContentVisible || bIsTitleInHeaderContent,
+				bUseIconTabBar = oControl.getUseIconTabBar(),
 				bTitleClickable = oControl.getToggleHeaderOnTitleClick(),
 				sTitleText;
 
@@ -128,6 +129,9 @@ sap.ui.define(["sap/ui/Device"],
 			if (jQuery.isArray(aSections)) {
 				jQuery.each(aSections, function (iIndex, oSection) {
 					oRm.renderControl(oSection);
+					if (bUseIconTabBar) {
+						oControl._oCurrentTabSection = oSection;
+					}
 				});
 			}
 			oRm.write("</section>");

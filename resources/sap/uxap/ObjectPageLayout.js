@@ -551,7 +551,7 @@ sap.ui.define([
 
 		if (bAppendHeaderToTitle) {
 			this._moveAnchorBarToTitleArea();
-			this._moveHeaderToTitleArea(false);
+			this._moveHeaderToTitleArea();
 			this._bHeaderExpanded = true;
 
 			this._updateToggleHeaderVisualIndicators();
@@ -1027,22 +1027,15 @@ sap.ui.define([
 
 	/**
 	 * Moves the header to the title area
+	 *
 	 * @private
 	 */
 	ObjectPageLayout.prototype._moveHeaderToTitleArea = function () {
-		var bPreserveHeaderHeight = this._shouldPreserveHeaderPlaceholderHeightInContentArea();
-
-		if (bPreserveHeaderHeight) {
-			// before removing the header content, preserve the height of its placeholder, to avoid automatic repositioning of scrolled content as it gets shortened (as its topmost part is cut off)
-			this._$headerContent.css("height", this.iHeaderContentHeight);
-		}
 		this._$headerContent.children().appendTo(this._$stickyHeaderContent);
 		this._bHeaderInTitleArea = true;
 
-		if (!bPreserveHeaderHeight) {
-			// the height will change => the page will scroll => add a flag to prevent modification on scroll
-			this._bSupressModifyOnScrollOnce = true;
-		}
+		// suppress the first scroll event to prevent the header snap again immediately
+		this._bSupressModifyOnScrollOnce = true;
 	};
 
 	/**
@@ -1051,7 +1044,7 @@ sap.ui.define([
 	 */
 	ObjectPageLayout.prototype._moveHeaderToContentArea = function () {
 		if (this._bHeaderInTitleArea) {
-			this._$headerContent.css("height", "auto").append(this._$stickyHeaderContent.children());
+			this._$headerContent.append(this._$stickyHeaderContent.children());
 			this._$stickyHeaderContent.children().remove();
 			this._bHeaderInTitleArea = false;
 		}
@@ -1364,7 +1357,7 @@ sap.ui.define([
 	};
 
 	ObjectPageLayout.prototype._isClosestScrolledSection = function (sSectionId) {
-		var iScrollTop = this._$opWrapper.scrollTop(),
+		var iScrollTop = this._$opWrapper.length > 0 ? this._$opWrapper.scrollTop() : 0,
 			iPageHeight = this.iScreenHeight,
 			sClosestSectionId = this._getClosestScrolledSectionId(iScrollTop, iPageHeight);
 
@@ -2203,7 +2196,7 @@ sap.ui.define([
 	 * @private
 	 */
 	ObjectPageLayout.prototype._shouldSnapHeaderOnScroll = function (iScrollTop) {
-		return (iScrollTop > 0) && (iScrollTop >= this._getSnapPosition());
+		return (iScrollTop > 0) && (iScrollTop >= this._getSnapPosition()) && !this._shouldPreserveHeaderInTitleArea();
 	};
 
 	/**
@@ -2233,20 +2226,14 @@ sap.ui.define([
 		}
 		if (bShouldStick && !bShouldPreserveHeaderInTitleArea) {
 			iPageHeight -= (this.iAnchorBarHeight + this.iHeaderTitleHeightStickied);
-		} else {
-			if (bShouldStick && bShouldPreserveHeaderInTitleArea) {
-				iPageHeight = iPageHeight - (this._$stickyAnchorBar.height() + this.iHeaderTitleHeight + this.iStickyHeaderContentHeight);
-			}
 		}
 
 		if (this._bHeaderInTitleArea && !bShouldPreserveHeaderInTitleArea) {
 			this._moveHeaderToContentArea();
 			this._toggleHeaderTitle(false /* snap */);
 			this._bHeaderExpanded = false;
-			if (!this._shouldPreserveHeaderPlaceholderHeightInContentArea()) { // height of content area changed => need to recalculate the layout
-				this._updateToggleHeaderVisualIndicators();
-				this._requestAdjustLayout();
-			}
+			this._updateToggleHeaderVisualIndicators();
+			this._requestAdjustLayout();
 		}
 
 		//don't apply parallax effects if there are not enough space for it
@@ -2341,10 +2328,16 @@ sap.ui.define([
 			bTraverseSubSections = bSubSectionsOnly || this._bMobileScenario;
 
 		jQuery.each(this._oSectionInfo, function (sId, oInfo) {
+			var section, sectionParent, isParentHiddenSection;
+
 			// on desktop/tablet, skip subsections
 			// BCP 1680331690. Should skip subsections that are in a section with lower importance, which makes them hidden.
-			var sectionParent = this.oCore.byId(sId).getParent(),
-				isParentHiddenSection = sectionParent instanceof ObjectPageSection && sectionParent._getIsHidden();
+			section = this.oCore.byId(sId);
+			if (!section) {
+				return;
+			}
+			sectionParent = section.getParent();
+			isParentHiddenSection = sectionParent instanceof ObjectPageSection && sectionParent._getIsHidden();
 
 			if (oInfo.isSection || (bTraverseSubSections && !isParentHiddenSection)) {
 				//we need to set the sClosest to the first section for handling the scrollTop = 0
@@ -3042,16 +3035,6 @@ sap.ui.define([
 				&& this.getAlwaysShowContentHeader();
 	};
 
-	/**
-	 * Checks if we should preserve the height of the content area upon removing the header content.
-	 * @private
-	 */
-	ObjectPageLayout.prototype._shouldPreserveHeaderPlaceholderHeightInContentArea = function () {
-		var oHeaderContent = this._getHeaderContent(),
-			bPinnable = oHeaderContent && oHeaderContent.supportsPinUnpin() && oHeaderContent.getPinnable();
-		return !bPinnable; // should not preserve the height if the header is pinnable
-	};
-
 	ObjectPageLayout.prototype._shouldOverridePreserveHeaderStateOnScroll = function () {
 		return !Device.system.desktop && this._headerBiggerThanAllowedToBeFixed();
 	};
@@ -3105,7 +3088,7 @@ sap.ui.define([
 		this._bPinned = true;
 		this._toggleHeaderTitle(true /* expand */);
 		this._moveAnchorBarToTitleArea();
-		this._moveHeaderToTitleArea(false);
+		this._moveHeaderToTitleArea();
 		this._adjustHeaderHeights();
 		this._requestAdjustLayout();
 		this._togglePinButtonARIAState(this._bPinned);

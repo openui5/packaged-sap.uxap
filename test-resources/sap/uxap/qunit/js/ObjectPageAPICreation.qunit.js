@@ -1153,8 +1153,54 @@
 		setTimeout(function() {
 			assert.equal(oObjectPageRenderSpy.callCount, 0,
 				"OP is not rerendered");
+			oObjectPage.destroy();
 			done();
 		}, 0);
+	});
+
+	QUnit.test("browser events not attached twice on rerender", function (assert) {
+
+		var oButton = new sap.m.Button("btn1", {text: "test"}),
+			oObjectPage = new sap.uxap.ObjectPageLayout({
+				useIconTabBar: true,
+				selectedSection: "section1",
+				sections: [
+					new sap.uxap.ObjectPageSection("section1", {
+						subSections: [
+							new sap.uxap.ObjectPageSubSection({
+								blocks: [
+									oButton
+								]
+							})
+						]
+					})
+				]
+			}),
+			fnBrowserEventHandler = this.spy(),
+			fnOnDomReady = function() {
+				oObjectPage.rerender();
+				var event,
+					$buttonDomRef = sap.ui.getCore().byId("btn1").getDomRef();
+				if (typeof Event === 'function') {
+					event = new Event("click");
+				} else {
+					event = document.createEvent('Event');
+					event.initEvent("click", true, true);
+				}
+				$buttonDomRef.dispatchEvent(event);
+				assert.equal(fnBrowserEventHandler.callCount, 1, "browser event listener called only once");
+				oObjectPage.destroy();
+				done();
+			},
+			done = assert.async();
+
+		assert.expect(1); //number of assertions
+
+		oButton.attachBrowserEvent("click", fnBrowserEventHandler);
+
+		helpers.renderObject(oObjectPage);
+
+		oObjectPage.attachEventOnce("onAfterRenderingDOMReady", fnOnDomReady);
 	});
 
 	QUnit.module("ObjectPage with ObjectPageDynamicHeaderTitle", {
@@ -1217,6 +1263,42 @@
 
 		oObjectPageTitle.ontap(oFakeEvent);
 		assert.equal(oObjectPage._bHeaderExpanded, true, "After restoring toggleHeaderOnTitleClick to true, the header again expands on click");
+	});
+
+	QUnit.module("ObjectPage with alwaysShowContentHeader", {
+
+		beforeEach: function () {
+			this.oObjectPage = helpers.generateObjectPageWithContent(oFactory, 5);
+			this.oObjectPage.setAlwaysShowContentHeader(true);
+			this.oObjectPage.addHeaderContent(new sap.m.Text({text: "Some header content"}));
+		},
+		afterEach: function () {
+			this.oObjectPage.destroy();
+		}
+	});
+
+	QUnit.test("Should not call toggleHeader", function (assert) {
+		var oObjectPage = this.oObjectPage,
+			oHeaderContent,
+			oSecondSection = oObjectPage.getSections()[1],
+			oToggleHeaderSpy = this.spy(oObjectPage, "_toggleHeader"),
+			done = assert.async(),
+			fnOnDomReady = function() {
+				oObjectPage.scrollToSection(oSecondSection.getId(), 0);
+				assert.strictEqual(oToggleHeaderSpy.callCount, 0, "Toggle header is not called");
+				oObjectPage.attachEventOnce("onAfterRenderingDOMReady", fnOnRerenderedDomReady2);
+				oObjectPage.rerender();
+			},
+			fnOnRerenderedDomReady2 = function() {
+				assert.equal(oObjectPage._bHeaderExpanded, true, "Flag for expandedHeader has correct value");
+				oHeaderContent = oObjectPage._getHeaderContent();
+				assert.equal(oHeaderContent.$().hasClass("sapUxAPObjectPageHeaderContentHidden"), false, "Header content is not hidden");
+				done();
+			};
+
+			assert.expect(3);
+			oObjectPage.attachEventOnce("onAfterRenderingDOMReady", fnOnDomReady);
+			helpers.renderObject(oObjectPage);
 	});
 
 	function checkObjectExists(sSelector) {
