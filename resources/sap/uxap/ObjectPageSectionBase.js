@@ -1,6 +1,6 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2017 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -243,7 +243,7 @@ sap.ui.define(["jquery.sap.global", "sap/ui/core/Control", "sap/ui/core/library"
 	 */
 	ObjectPageSectionBase.prototype._notifyObjectPageLayout = function () {
 		if (this._getObjectPageLayout() && this._getObjectPageLayout().$().length){
-			this._getObjectPageLayout()._adjustLayoutAndUxRules();
+			this._getObjectPageLayout()._requestAdjustLayoutAndUxRules();
 		}
 	};
 
@@ -273,7 +273,7 @@ sap.ui.define(["jquery.sap.global", "sap/ui/core/Control", "sap/ui/core/library"
 
 		this.setProperty("visible", bValue, true);
 		/* handle invalidation ourselves in adjustLayoutAndUxRules */
-		this._getObjectPageLayout()._adjustLayoutAndUxRules();
+		this._getObjectPageLayout()._requestAdjustLayoutAndUxRules();
 		this.invalidate();
 		return this;
 	};
