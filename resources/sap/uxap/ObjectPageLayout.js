@@ -845,6 +845,7 @@ sap.ui.define([
 		// some late callbacks may still have access to the page
 		// (and try to process the page) after the page is being destroyed
 		this._oFirstVisibleSection = null;
+		this._oFirstVisibleSubSection = null;
 	};
 
 	ObjectPageLayout.prototype._getCustomScrollBar = function () {
@@ -1175,6 +1176,7 @@ sap.ui.define([
 
 		this._setInternalAnchorBarVisible(bVisibleAnchorBar, bInvalidate);
 		this._oFirstVisibleSection = oFirstVisibleSection;
+		this._oFirstVisibleSubSection = this._getFirstVisibleSubSection(oFirstVisibleSection);
 	};
 
 	/* IconTabBar management */
@@ -1865,7 +1867,7 @@ sap.ui.define([
 
 
 			// update visibility
-			var bShouldBeVisible = (iScrollableContentSize > this.iScreenHeight),
+			var bShouldBeVisible = (iScrollableContentSize > Math.ceil(this.iScreenHeight)),
 				bVisibilityChange = (bShouldBeVisible !== this._getCustomScrollBar().getVisible());
 
 			if (bVisibilityChange) {
@@ -2014,12 +2016,15 @@ sap.ui.define([
 		return iSpacerHeight;
 	};
 
-	ObjectPageLayout.prototype._isFirstVisibleSectionBase = function (oSection) {
+	ObjectPageLayout.prototype._isFirstVisibleSectionBase = function (oSectionBase) {
 
-		var oSectionInfo = this._oSectionInfo[oSection.getId()];
-		if (oSectionInfo) {
-			return Math.abs(oSectionInfo.positionTop - this.iHeaderContentHeight) <= 1;
+		var sSectionBaseId;
+
+		if (oSectionBase && (this._oFirstVisibleSubSection || this._oFirstVisibleSection)) {
+			sSectionBaseId = oSectionBase.getId();
+			return sSectionBaseId === this._oFirstVisibleSection.getId() || sSectionBaseId === this._oFirstVisibleSubSection.getId();
 		}
+
 		return false;
 	};
 
