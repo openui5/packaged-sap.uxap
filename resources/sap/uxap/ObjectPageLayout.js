@@ -1526,7 +1526,7 @@ sap.ui.define([
 
 
 			// update visibility
-			var bShouldBeVisible = (iScrollableContentSize > this.iScreenHeight),
+			var bShouldBeVisible = (iScrollableContentSize > Math.ceil(this.iScreenHeight)),
 				bVisibilityChange = (bShouldBeVisible !== this._getCustomScrollBar().getVisible());
 
 			if (bVisibilityChange) {
@@ -1679,10 +1679,32 @@ sap.ui.define([
 
 	ObjectPageLayout.prototype._isFirstVisibleSectionBase = function (oSectionBase) {
 
-		var sSectionBaseId;
+		var sSectionBaseId,
+			oSelectedSection,
+			sFirstVisibleSubSection,
+			sSelectedSectionId = this.getSelectedSection(),
+			bUseIconTabBar = this.getUseIconTabBar();
 
-		if (oSectionBase && (this._oFirstVisibleSubSection || this._oFirstVisibleSection)) {
-			sSectionBaseId = oSectionBase.getId();
+		if (!oSectionBase || !oSectionBase.getParent()) {
+			return;
+		}
+
+		sSectionBaseId = oSectionBase.getId();
+
+		// we use tabs => check if the section matches the current tab section
+		if (bUseIconTabBar && (sSectionBaseId === sSelectedSectionId)) {
+			return true;
+		}
+
+		// we use tabs => check if the section is a subSection of the current tab section
+		if (bUseIconTabBar && (oSectionBase.getParent().getId() === sSelectedSectionId)) {
+			oSelectedSection = sap.ui.getCore().byId(sSelectedSectionId);
+			sFirstVisibleSubSection = this._getFirstVisibleSubSection(oSelectedSection);
+			return sFirstVisibleSubSection && (sFirstVisibleSubSection.getId() === sSectionBaseId);
+		}
+
+		// in anchorBar mode only return the available calculated firstVisibleSection
+		if (this._oFirstVisibleSection && this._oFirstVisibleSubSection) {
 			return sSectionBaseId === this._oFirstVisibleSection.getId() || sSectionBaseId === this._oFirstVisibleSubSection.getId();
 		}
 
