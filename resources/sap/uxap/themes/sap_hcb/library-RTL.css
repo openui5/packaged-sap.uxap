@@ -1017,6 +1017,7 @@ html[dir=rtl] .sapUxAPObjectPageHeaderMarks .sapMObjStatusMarker .sapUiIcon:firs
 .sapUxAPObjectPageHeaderContent > .sapUxAPObjectPageHeaderSeparatorContainer .sapMObjectAttributeActive .sapMObjectAttributeText,
 .sapUxAPObjectPageHeaderContent > .sapUxAPObjectPageHeaderWidthContainer .sapMObjectAttributeActive .sapMObjectAttributeText {
   display: inline;
+  position: relative;
   white-space: pre-line;
   word-wrap: break-word;
 }

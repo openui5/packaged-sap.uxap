@@ -549,10 +549,16 @@ sap.ui.define([
 	};
 
 	ObjectPageLayout.prototype.setToggleHeaderOnTitleClick = function (bToggleHeaderOnTitleClick) {
-		var vResult = this.setProperty("toggleHeaderOnTitleClick", bToggleHeaderOnTitleClick, true);
+		var oDynamicPageTitle = this.getHeaderTitle(),
+			vResult = this.setProperty("toggleHeaderOnTitleClick", bToggleHeaderOnTitleClick, true);
 
+		bToggleHeaderOnTitleClick = this.getProperty("toggleHeaderOnTitleClick");
 		this.$().toggleClass("sapUxAPObjectPageLayoutTitleClickEnabled", bToggleHeaderOnTitleClick);
 		this._updateToggleHeaderVisualIndicators();
+
+		if (exists(oDynamicPageTitle)) {
+			oDynamicPageTitle._toggleFocusableState(bToggleHeaderOnTitleClick);
+		}
 
 		return vResult;
 	};
@@ -1930,7 +1936,7 @@ sap.ui.define([
 
 
 			// update visibility
-			var bShouldBeVisible = (iScrollableContentSize > this.iScreenHeight),
+			var bShouldBeVisible = (iScrollableContentSize > Math.ceil(this.iScreenHeight)),
 				bVisibilityChange = (bShouldBeVisible !== this._getCustomScrollBar().getVisible());
 
 			if (bVisibilityChange) {
