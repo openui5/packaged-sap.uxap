@@ -2610,7 +2610,7 @@ sap.ui.define([
 			// read the headerContentHeight ---------------------------
 			// Note: we are using getBoundingClientRect on the Dom reference to get the correct height taking into account
 			// possible browser zoom level. For more details BCP: 1780309606
-			this.iHeaderContentHeight = this._$headerContent[0].parentElement ? this._$headerContent[0].getBoundingClientRect().height : 0;
+			this.iHeaderContentHeight = this._$headerContent[0].parentElement ? Math.ceil(this._$headerContent[0].getBoundingClientRect().height) : 0;
 
 			//read the sticky headerContentHeight ---------------------------
 			this.iStickyHeaderContentHeight = this._$stickyHeaderContent.height();
@@ -3040,8 +3040,18 @@ sap.ui.define([
 	 * @returns {*}
 	 */
 	ObjectPageLayout.prototype.clone = function () {
+		var oClone,
+			oHeaderContent;
+
 		Object.keys(this.mAggregations).forEach(this._cloneProxiedAggregations, this);
-		return Control.prototype.clone.apply(this, arguments);
+
+		oClone = Control.prototype.clone.apply(this, arguments);
+		oHeaderContent = this._getHeaderContent();
+
+		// "_headerContent" aggregation is hidden and it is not cloned by default
+		oClone.setAggregation("_headerContent", oHeaderContent.clone(), true);
+
+		return oClone;
 	};
 
 	ObjectPageLayout.prototype._cloneProxiedAggregations = function (sAggregationName) {
