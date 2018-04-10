@@ -34,6 +34,9 @@ html.sapUiMedia-Std-Desktop .sapUiContainer-Medium .sapUxAPAnchorBar.sapMTB,
 html .sapUiContainer-Wide .sapMSplitContainerDetail .sapUxAPAnchorBar.sapMTB {
   padding-left: 1rem;
 }
+html.sapUiMedia-Std-Desktop .sapUiContainer-Narrow .sapUxAPAnchorBar.sapMTB {
+  padding-left: 0;
+}
 .sapUxAPAnchorBar {
   vertical-align: middle;
 }
@@ -309,6 +312,9 @@ Compact
 /* CSS for control sap.uxap/BlockBase  */
 /* Base theme                          */
 /* =================================== */
+.sapUxAPBlockBase {
+  min-height: 8rem;
+}
 .sapUxAPBlockBaseDefaultSize {
   height: 8rem;
 }
@@ -424,7 +430,8 @@ Compact
 .sapUxAPHierarchicalSelect.sapMSltHoverable.sapMSltIconOnly.sapMSltPressed.sapMSlt:focus > .sapMSltIcon {
   outline: none;
 }
-.sapUiSizeCompact .sapUxAPHierarchicalSelect.sapMSlt {
+.sapUiSizeCompact .sapUxAPHierarchicalSelect.sapMSlt,
+.sapUiSizeCompact .sapUiContainer-Narrow .sapUxAPHierarchicalSelect.sapMSlt {
   height: 2rem;
   margin-top: 0;
   margin-bottom: 0;

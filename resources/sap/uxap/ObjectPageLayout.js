@@ -2683,7 +2683,7 @@ sap.ui.define([
 			// read the headerContentHeight ---------------------------
 			// Note: we are using getBoundingClientRect on the Dom reference to get the correct height taking into account
 			// possible browser zoom level. For more details BCP: 1780309606
-			this.iHeaderContentHeight = this._$headerContent[0].parentElement ? this._$headerContent[0].getBoundingClientRect().height : 0;
+			this.iHeaderContentHeight = this._$headerContent[0].parentElement ? Math.ceil(this._$headerContent[0].getBoundingClientRect().height) : 0;
 
 			//read the sticky headerContentHeight ---------------------------
 			this.iStickyHeaderContentHeight = this._$stickyHeaderContent.height();
@@ -3113,8 +3113,18 @@ sap.ui.define([
 	 * @returns {*}
 	 */
 	ObjectPageLayout.prototype.clone = function () {
+		var oClone,
+			oHeaderContent;
+
 		Object.keys(this.mAggregations).forEach(this._cloneProxiedAggregations, this);
-		return Control.prototype.clone.apply(this, arguments);
+
+		oClone = Control.prototype.clone.apply(this, arguments);
+		oHeaderContent = this._getHeaderContent();
+
+		// "_headerContent" aggregation is hidden and it is not cloned by default
+		oClone.setAggregation("_headerContent", oHeaderContent.clone(), true);
+
+		return oClone;
 	};
 
 	ObjectPageLayout.prototype._cloneProxiedAggregations = function (sAggregationName) {
@@ -3436,8 +3446,13 @@ sap.ui.define([
 	 */
 	ObjectPageLayout.prototype._resumeScroll = function () {
 		this._bSuppressScroll = false;
-		if (this._iStoredScrollPosition) {
-			this._scrollTo(this._iStoredScrollPosition, 0);
+		// restore state:
+		// (1) restore latest stored scrollPosition
+		// (2) adjust snapped state and selectedSection to the ones that corresponds to the current scrollPosition (these, by design, will be auto-detected and adjusted in the **onScroll** listener)
+		if (this._iStoredScrollPosition) { // restore scroll position if available
+			this._scrollTo(this._iStoredScrollPosition, 0); // snapped state and selectedSection will be auto-detected and adjusted in the onScroll handler
+		} else { // remain at current scroll position
+			this._onScroll({target: {scrollTop: this._$opWrapper.scrollTop()}}); // explicitly call the onScroll handler to allow auto-detect and adjust the selectedSection and the snapped state
 		}
 	};
 
