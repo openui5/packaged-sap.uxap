@@ -31,10 +31,10 @@ sap.ui.define([
 	 *
 	 * Note: Subsections are required to have an ID when used with ObjectPageLazyLoader.
 	 *
-	 * @extends sap.ui.core.Control
+	 * @extends sap.ui.core.Element
 	 *
 	 * @author SAP SE
-	 * @version 1.52.10
+	 * @version 1.52.11
 	 *
 	 * @constructor
 	 * @public
