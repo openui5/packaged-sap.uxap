@@ -2173,7 +2173,7 @@ sap.ui.define([
 
 	ObjectPageLayout.prototype._registerOnContentResize = function () {
 
-		var $container = this._$sectionsContainer.length && this._$sectionsContainer[0];
+		var $container = this._$contentContainer.length && this._$contentContainer[0];
 		if (!$container) {
 			return;
 		}
@@ -3037,7 +3037,7 @@ sap.ui.define([
 	 */
 	ObjectPageLayout.prototype._storeScrollLocation = function () {
 
-		if (!this._bDomReady) {
+		if (!this.getDomRef() || !this._bDomReady) {
 			return;
 		}
 		this._iStoredScrollPosition = this._oScroller.getScrollTop(); //TODO: compute the position RELATIVE to the subsection
