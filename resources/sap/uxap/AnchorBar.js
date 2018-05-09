@@ -140,7 +140,9 @@ sap.ui.define([
 	AnchorBar.DOM_CALC_DELAY = 200; // ms
 
 	AnchorBar.prototype.setSelectedButton = function (oButton) {
-		var aSelectItems = this._oSelect.getItems(),
+		var sPreviouslySelectedButtonId = this.getSelectedButton(),
+			oPreviouslySelectedButton,
+			aSelectItems = this._oSelect.getItems(),
 			bHasSelectItems = aSelectItems.length > 0;
 
 		if (typeof oButton === "string") {
@@ -149,7 +151,7 @@ sap.ui.define([
 
 		if (oButton) {
 
-			if (oButton.getId() === this.getSelectedButton()) {
+			if (oButton.getId() === sPreviouslySelectedButtonId) {
 				return this;
 			}
 
@@ -161,9 +163,9 @@ sap.ui.define([
 			}
 
 			if (this._bHasButtonsBar) {
-				//remove selection class from the currently selected item
-				this.$().find(".sapUxAPAnchorBarButtonSelected").removeClass("sapUxAPAnchorBarButtonSelected");
-				oButton.$().addClass("sapUxAPAnchorBarButtonSelected");
+				oPreviouslySelectedButton = sap.ui.getCore().byId(sPreviouslySelectedButtonId);
+				this._toggleSelectionStyleClass(oPreviouslySelectedButton, false);
+				this._toggleSelectionStyleClass(oButton, true);
 
 				if (oSelectedSectionId) {
 					this.scrollToSection(oSelectedSectionId, AnchorBar.SCROLL_DURATION);
@@ -353,6 +355,13 @@ sap.ui.define([
 
 				this._oPressHandlers[oPopoverState.oLastFirstLevelButton.getId()] = fnPressHandler;
 			}
+		}
+	};
+
+	AnchorBar.prototype._toggleSelectionStyleClass = function(oButton, bAdd) {
+		if (oButton) {
+			oButton.toggleStyleClass("sapUxAPAnchorBarButtonSelected", bAdd);
+			oButton.$().attr("aria-checked", bAdd);
 		}
 	};
 
