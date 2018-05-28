@@ -524,6 +524,10 @@ sap.ui.define([
 		this._bMobileScenario = library.Utilities.isPhoneScenario(this._getCurrentMediaContainerRange());
 		this._bTabletScenario = library.Utilities.isTabletScenario(this._getCurrentMediaContainerRange());
 
+		if (this._checkAlwaysShowContentHeader()) {
+			this._bHeaderExpanded = true; // enforce to expanded header whenever the <code>alwaysShowContentHeader</code> takes effect (it takes effect depending on screen size and header type)
+		}
+
 		this._bHeaderInTitleArea = this._shouldPreserveHeaderInTitleArea();
 
 		this._createHeaderContent();
@@ -1021,6 +1025,17 @@ sap.ui.define([
 
 		if (bOldValue !== bValue) {
 			this.setProperty("alwaysShowContentHeader", bValue, bSuppressInvalidate);
+		}
+		return this;
+	};
+
+	ObjectPageLayout.prototype.setShowEditHeaderButton = function (bValue) {
+		var bOldValue = this.getShowEditHeaderButton(),
+			oHeaderContent = this.getAggregation("_headerContent");
+
+		if (bOldValue !== bValue) {
+			this.setProperty("showEditHeaderButton", bValue, true);
+			oHeaderContent && oHeaderContent.invalidate();
 		}
 		return this;
 	};

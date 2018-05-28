@@ -1,10 +1,13 @@
 /*global QUnit*/
+/*global sinon*/
 
-(function ($, QUnit) {
+(function ($, QUnit, sinon) {
 	"use strict";
 
 	jQuery.sap.registerModulePath("sap.uxap.testblocks", "./blocks");
 	jQuery.sap.registerModulePath("view", "view");
+
+	var lib = sap.ui.require("sap/uxap/library");
 
 	var oFactory = {
 			getSection: function (iNumber, sTitleLevel, aSubSections) {
@@ -1122,6 +1125,16 @@
 		oObjectPage.setShowAnchorBar(true);
 		assert.equal(oObjectPage.getShowAnchorBar(), true);
 	});
+
+	QUnit.test("test showEditHeaderButton API", function (assert) {
+		var oObjectPage = new sap.uxap.ObjectPageLayout(this.oView.createId("myObjectPage6"));
+		assert.strictEqual(oObjectPage.getShowEditHeaderButton(), false, "showEditHeaderButton is false by default");
+		oObjectPage.setShowEditHeaderButton(true);
+		assert.strictEqual(oObjectPage.getShowEditHeaderButton(), true, "showEditHeaderButton is set to true correctly");
+		oObjectPage.setShowEditHeaderButton(false);
+		assert.strictEqual(oObjectPage.getShowEditHeaderButton(), false, "showEditHeaderButton is set to false correctly");
+	});
+
 	QUnit.test("test Section APIs", function (assert) {
 		var oObjectPage = new sap.uxap.ObjectPageLayout(this.oView.createId("myObjectPage7"));
 		var oSection1 = new sap.uxap.ObjectPageSection({title: "Recognition"});
@@ -1576,18 +1589,8 @@
 			},
 			// this delay is already introduced in the ObjectPage resize listener
 			iDelay = sap.uxap.ObjectPageLayout.HEADER_CALC_DELAY + 100,
-			bInvalidateCalled = false,
+			oSpy,
 			done = assert.async();
-
-		// the sinon spy cannot be applied here for some reason,
-		// so i'm using a custom proxy just for this test
-		function proxyInvalidate() {
-			var fnIvalidateOriginal = oObjectPage.invalidate;
-			oObjectPage. invalidate = function() {
-				bInvalidateCalled = true;
-				fnIvalidateOriginal.apply(this, arguments);
-			};
-		}
 
 		oObjectPage.attachEventOnce("onAfterRenderingDOMReady", function() {
 
@@ -1596,13 +1599,13 @@
 			oObjectPage._expandHeader(true);
 			assert.ok(oObjectPage._bHeaderInTitleArea);
 
-			proxyInvalidate();
+			oSpy = sinon.spy(sap.uxap.ObjectPageLayout.prototype, "invalidate");
 
 			// act: resize and check if the page invalidates in the resize listener
 			oObjectPage._onUpdateScreenSize(oFakeEvent);
 
 			setTimeout(function() {
-				assert.strictEqual(bInvalidateCalled, false, "page was not invalidated during resize");
+				assert.strictEqual(oSpy.called, false, "page was not invalidated during resize");
 				done();
 			}, iDelay);
 		});
@@ -1668,6 +1671,53 @@
 			assert.expect(3);
 			oObjectPage.attachEventOnce("onAfterRenderingDOMReady", fnOnDomReady);
 			helpers.renderObject(oObjectPage);
+	});
+
+	QUnit.test("'alwaysShowContentHeader' is applied correctly on screen resize", function (assert) {
+		// arrange
+		var oObjectPage = this.oObjectPage,
+			oFakeEvent = {
+				size: {
+					width: 100,
+					height: 300
+				},
+				oldSize: {
+					width: 100,
+					height: 400
+				}
+			},
+			done = assert.async();
+
+		// mock tablet mode
+		this.stub(lib.Utilities, "isPhoneScenario", function() {
+			return false;
+		});
+		this.stub(lib.Utilities, "isTabletScenario", function() {
+			return true;
+		});
+
+		assert.expect(2);
+
+
+		oObjectPage.attachEventOnce("onAfterRenderingDOMReady", function() {
+
+			// setup: expand the header in the title
+			oObjectPage._scrollTo(0, 200);
+			assert.ok(!oObjectPage._bHeaderInTitleArea);
+
+			// act: resize and check if the page invalidates in the resize listener
+			sinon.stub(lib.Utilities, "isTabletScenario", function() {
+				return false;
+			});
+			oObjectPage._onUpdateScreenSize(oFakeEvent);
+
+			oObjectPage.attachEventOnce("onAfterRenderingDOMReady", function() {
+				assert.ok(oObjectPage._bHeaderInTitleArea);
+				done();
+			});
+		}, this);
+
+		helpers.renderObject(oObjectPage);
 	});
 
 	QUnit.module("Modifying hidden page", {
@@ -1888,4 +1938,4 @@
 		return oObject.length !== 0;
 	}
 
-}(jQuery, QUnit));
+}(jQuery, QUnit, sinon));
