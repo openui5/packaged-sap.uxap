@@ -1,10 +1,13 @@
 /*global QUnit*/
+/*global sinon*/
 
-(function ($, QUnit) {
+(function ($, QUnit, sinon) {
 	"use strict";
 
 	jQuery.sap.registerModulePath("sap.uxap.testblocks", "./blocks");
 	jQuery.sap.registerModulePath("view", "view");
+
+	var lib = sap.ui.require("sap/uxap/library");
 
 	var oFactory = {
 			getSection: function (iNumber, sTitleLevel, aSubSections) {
@@ -257,6 +260,47 @@
 			done();
 		}, this.iLoadingDelay);
 
+	});
+
+	QUnit.module("Content resize", {
+		beforeEach: function () {
+			this.NUMBER_OF_SECTIONS = 3;
+			this.oObjectPage = helpers.generateObjectPageWithContent(oFactory, this.NUMBER_OF_SECTIONS, false);
+			this.iLoadingDelay = 2000;
+		},
+		afterEach: function () {
+			this.oObjectPage.destroy();
+			this.iLoadingDelay = 0;
+		}
+	});
+
+	QUnit.test("adjust selected section", function (assert) {
+		var oObjectPage = this.oObjectPage,
+			oHhtmBlock,
+			oFirstSection = oObjectPage.getSections()[0],
+			oSecondSection = oObjectPage.getSections()[1],
+			done = assert.async();
+
+		// setup step1: add content with defined height
+		oHhtmBlock = new sap.ui.core.HTML("b1", { content: '<div class="innerDiv" style="height:300px"></div>'});
+		oFirstSection.getSubSections()[0].addBlock(oHhtmBlock);
+
+		// setup step2
+		oObjectPage.setSelectedSection(oSecondSection.getId());
+
+		oObjectPage.attachEventOnce("onAfterRenderingDOMReady", function () {
+
+			// Act: change height without invalidating any control => on the the resize handler will be responsible for re-adjusting the selection
+			sap.ui.getCore().byId("b1").getDomRef().style.height = "250px";
+
+			setTimeout(function() {
+				assert.equal(oObjectPage.getSelectedSection(), oSecondSection.getId(), "selected section is correct");
+				done();
+			}, this.iLoadingDelay);
+
+		}.bind(this));
+
+		helpers.renderObject(oObjectPage);
 	});
 
 	QUnit.module("test setSelectedSection functionality");
@@ -991,6 +1035,16 @@
 		oObjectPage.setShowAnchorBar(true);
 		assert.equal(oObjectPage.getShowAnchorBar(), true);
 	});
+
+	QUnit.test("test showEditHeaderButton API", function (assert) {
+		var oObjectPage = new sap.uxap.ObjectPageLayout(this.oView.createId("myObjectPage6"));
+		assert.strictEqual(oObjectPage.getShowEditHeaderButton(), false, "showEditHeaderButton is false by default");
+		oObjectPage.setShowEditHeaderButton(true);
+		assert.strictEqual(oObjectPage.getShowEditHeaderButton(), true, "showEditHeaderButton is set to true correctly");
+		oObjectPage.setShowEditHeaderButton(false);
+		assert.strictEqual(oObjectPage.getShowEditHeaderButton(), false, "showEditHeaderButton is set to false correctly");
+	});
+
 	QUnit.test("test Section APIs", function (assert) {
 		var oObjectPage = new sap.uxap.ObjectPageLayout(this.oView.createId("myObjectPage7"));
 		var oSection1 = new sap.uxap.ObjectPageSection({title: "Recognition"});
@@ -1363,6 +1417,31 @@
 		assert.strictEqual(oStateChangeListener.callCount, 2, "stateChange event was fired twice");
 	});
 
+	QUnit.test("ObjectPage header is preserved in title on content resize", function (assert) {
+		// arrange
+		var oObjectPage = this.oObjectPage,
+			// this delay is already introduced in the ObjectPage resize listener
+			iDelay = sap.uxap.ObjectPageLayout.HEADER_CALC_DELAY + 100,
+			done = assert.async();
+
+		oObjectPage.attachEventOnce("onAfterRenderingDOMReady", function() {
+
+			// setup: expand the header in the title
+			oObjectPage._scrollTo(0, 200);
+			oObjectPage._expandHeader(true);
+			assert.ok(oObjectPage._bHeaderInTitleArea);
+
+			// act: resize and check if the page invalidates in the resize listener
+			oObjectPage._onUpdateContentSize();
+
+			setTimeout(function() {
+				assert.strictEqual(oObjectPage._bHeaderInTitleArea, true, "page is not snapped on resize");
+				done();
+			}, iDelay);
+		});
+
+	});
+
 	QUnit.module("ObjectPage with alwaysShowContentHeader", {
 
 		beforeEach: function () {
@@ -1397,6 +1476,54 @@
 			assert.expect(3);
 			oObjectPage.attachEventOnce("onAfterRenderingDOMReady", fnOnDomReady);
 			helpers.renderObject(oObjectPage);
+	});
+
+	QUnit.test("'alwaysShowContentHeader' is applied correctly on screen resize", function (assert) {
+		// arrange
+		var oObjectPage = this.oObjectPage,
+			oFakeEvent = {
+				size: {
+					width: 100,
+					height: 300
+				},
+				oldSize: {
+					width: 100,
+					height: 400
+				}
+			},
+			done = assert.async();
+
+		// mock tablet mode
+		sinon.stub(lib.Utilities, "isPhoneScenario", function() {
+			return false;
+		});
+		sinon.stub(lib.Utilities, "isTabletScenario", function() {
+			return true;
+		});
+
+		assert.expect(2);
+
+
+		oObjectPage.attachEventOnce("onAfterRenderingDOMReady", function() {
+
+			// setup: expand the header in the title
+			oObjectPage._scrollTo(0, 200);
+			assert.ok(!oObjectPage._bHeaderInTitleArea);
+
+			// act: resize and check if the page invalidates in the resize listener
+			lib.Utilities.isTabletScenario.restore(); // restore to change stub
+			sinon.stub(lib.Utilities, "isTabletScenario", function() {
+				return false;
+			});
+			oObjectPage._onUpdateScreenSize(oFakeEvent);
+
+			oObjectPage.attachEventOnce("onAfterRenderingDOMReady", function() {
+				assert.ok(oObjectPage._bHeaderInTitleArea);
+				done();
+			});
+		}, this);
+
+		helpers.renderObject(oObjectPage);
 	});
 
 	QUnit.module("Modifying hidden page", {
@@ -1536,4 +1663,4 @@
 		return oObject.length !== 0;
 	}
 
-}(jQuery, QUnit));
+}(jQuery, QUnit, sinon));
