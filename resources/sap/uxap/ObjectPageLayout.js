@@ -1081,9 +1081,10 @@ sap.ui.define([
 		}
 
 		if (sId === null) {
-			// unset the currently selectedSection and allow the page to invalidate
-			// so upon rerendering the first visible section  will be set as selected
-			return this.setAssociation("selectedSection", null);
+			this.setAssociation("selectedSection", null, true);
+			this._expandHeader();
+			this._requestAdjustLayoutAndUxRules(true); // obtains the firstVisible section and scrolls to it if needed
+			return this;
 		}
 
 		this.scrollToSection(sId);
@@ -2399,7 +2400,8 @@ sap.ui.define([
 
 	ObjectPageLayout.prototype._isContentLengthDecreased = function (oPreviousScrollState) {
 		if (oPreviousScrollState) {
-			return oPreviousScrollState.iScrollableContentLength > this._oLastScrollState.iScrollableContentLength;
+			return ((oPreviousScrollState.iScrollableContentLength > this._oLastScrollState.iScrollableContentLength)
+				&& (oPreviousScrollState.iSpacerHeight === this._oLastScrollState.iSpacerHeight)); // ignore spacer adjustments
 		}
 	};
 
@@ -2421,6 +2423,7 @@ sap.ui.define([
 		var iScrollTop = Math.max(oEvent.target.scrollTop, 0), // top of the visible page
 			$wrapper = this._$opWrapper.length && this._$opWrapper[0],
 			$spacer = this._$spacer.length && this._$spacer[0],
+			iSpacerHeight = $spacer.offsetHeight,
 			iPageHeight,
 			oHeader = this.getHeaderTitle(),
 			bShouldStick = this._shouldSnapHeaderOnScroll(iScrollTop),
@@ -2432,7 +2435,8 @@ sap.ui.define([
 		this._oLastScrollState = {
 			iScrollTop: iScrollTop,
 			iScrollableContentLength: this._getScrollableContentLength(),
-			iScrollableViewportHeight: $wrapper.offsetHeight
+			iScrollableViewportHeight: $wrapper.offsetHeight,
+			iSpacerHeight: iSpacerHeight
 		};
 
 		if (this._bSupressModifyOnScrollOnce) {
@@ -2465,7 +2469,7 @@ sap.ui.define([
 			if (!this._canReachScrollTop(oPreviousScrollState.iScrollTop)
 				&& this._canReachScrollTop(oPreviousScrollState.iScrollTop, iContentLengthChange)) {
 
-				var iNewSpacerHeight = $spacer.offsetHeight + iContentLengthChange;
+				var iNewSpacerHeight = iSpacerHeight + iContentLengthChange;
 				this._$spacer.height(iNewSpacerHeight + "px"); // add extra space to compensate height loss
 				this._scrollTo($wrapper.scrollTop + iScrollOffset); // scroll back to the previous scroll top (to fallback from the visual offset of content)
 				return;
