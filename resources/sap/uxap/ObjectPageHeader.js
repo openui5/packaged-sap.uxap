@@ -612,6 +612,10 @@ sap.ui.define([
 		this._oFavIcon.setVisible(this.getMarkFavorite());
 		this._oFlagIcon.setVisible(this.getMarkFlagged());
 		this._attachDetachActionButtonsHandler(false);
+		if (this._iResizeId) {
+			ResizeHandler.deregister(this._iResizeId);
+			this._iResizeId = null;
+		}
 		this._bFirstRendering = false;
 	};
 
@@ -993,6 +997,7 @@ sap.ui.define([
 		this._clearImageNotFoundHandler();
 		if (this._iResizeId) {
 			ResizeHandler.deregister(this._iResizeId);
+			this._iResizeId = null;
 		}
 	};
 
