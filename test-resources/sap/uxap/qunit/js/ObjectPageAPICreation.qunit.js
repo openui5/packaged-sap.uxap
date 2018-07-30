@@ -221,7 +221,7 @@
 			this.oSecondSection = this.oObjectPage.getSections()[1];
 			this.oThirdSection = this.oObjectPage.getSections()[2];
 			this.oObjectPage.setSelectedSection(this.oSecondSection.getId());
-			this.iLoadingDelay = 500;
+			this.iLoadingDelay = 1000;
 
 		},
 		afterEach: function () {
@@ -421,6 +421,7 @@
 			oSecondPage = new sap.m.Page("page2"),
 			oNavCont = new sap.m.NavContainer({ pages: [oObjectPage, oSecondPage]}),
 			oExpected,
+			bFirefox = sap.ui.Device.browser.firefox,
 			done = assert.async(); //async test needed because tab initialization is done onAfterRenderingDomReady (after HEADER_CALC_DELAY)
 
 		// add header content
@@ -457,8 +458,8 @@
 								sSelectedTitle: oFirstSection.getSubSections()[0].getTitle() //subsection is promoted
 							};
 							sectionIsSelected(oObjectPage, assert, oExpected);
-							assert.equal(oObjectPage._bHeaderExpanded, true, "Header is expnded");
-							assert.equal(oObjectPage._$opWrapper.scrollTop(), 0, "page is scrolled to top");
+							assert.equal(oObjectPage._bHeaderExpanded, bFirefox ? false : true, "Header is expanded");
+							assert.equal(oObjectPage._$opWrapper.scrollTop(), bFirefox ? oObjectPage.iHeaderContentHeight : 0, "page is scrolled to top");
 
 							// cleanup
 							oNavCont.destroy();
@@ -508,6 +509,60 @@
 			}
 		};
 
+		oObjectPage.addEventDelegate(oDelegate);
+
+		helpers.renderObject(oObjectPage);
+	});
+
+	QUnit.test("scroll to selected section on rerender", function (assert) {
+		var oObjectPage = this.oObjectPage,
+			oSecondSection = this.oObjectPage.getSections()[1],
+			done = assert.async(); //async test needed because tab initialization is done onAfterRenderingDomReady (after HEADER_CALC_DELAY)
+
+		assert.expect(2);
+
+		oObjectPage.setUseIconTabBar(false);
+		oObjectPage.setSelectedSection(oSecondSection);
+
+		oObjectPage.attachEventOnce("onAfterRenderingDOMReady", function() {
+			// assert state before second rendering
+			assert.ok(oObjectPage._$opWrapper.get(0).scrollTop > 0, "selected section is bellow scrollTop");
+
+			oObjectPage.attachEventOnce("onAfterRenderingDOMReady", function() {
+				// assert state after second rendering
+				assert.ok(oObjectPage._$opWrapper.get(0).scrollTop > 0, "selected section is bellow scrollTop");
+				done();
+			});
+
+			// act: rerender
+			oObjectPage.rerender();
+		});
+
+		helpers.renderObject(oObjectPage);
+	});
+
+	QUnit.test("scrollEnablement obtains container ref onAfterRendering", function (assert) {
+		var oObjectPage = this.oObjectPage,
+			done = assert.async(); //async test needed because tab initialization is done onAfterRenderingDomReady (after HEADER_CALC_DELAY)
+
+		// ensure page can be scrolled
+		jQuery("#qunit-fixture").height("200"); // container small enough
+		oObjectPage.setUseIconTabBar(false); // content can be scrolled across sections
+
+		assert.expect(3);
+
+		var oDelegate = {
+			onAfterRendering: function () {
+				assert.ok(oObjectPage._oScroller._$Container, "scroller has container referefnce");
+				assert.strictEqual(oObjectPage._oScroller._$Container.get(0), oObjectPage._$opWrapper.get(0), "scroller has correct container reference");
+
+				oObjectPage._oScroller.scrollTo(0, 10);
+				assert.strictEqual(oObjectPage._$opWrapper.get(0).scrollTop, 10, "scroller can correctly scroll after we have externally provided the container reference");
+
+				oObjectPage.removeEventDelegate(oDelegate);
+				done();
+			}
+		};
 		oObjectPage.addEventDelegate(oDelegate);
 
 		helpers.renderObject(oObjectPage);
