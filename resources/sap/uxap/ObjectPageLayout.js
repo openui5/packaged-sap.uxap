@@ -929,41 +929,42 @@ sap.ui.define([
 	 *
 	 * The section can either be given by itself or by its id.
 	 *
-	 * Note that <code>null</code> or <code>undefined</code> are not valid arguments and will be discarded.
-	 * This is because the <code>sap.uxap.ObjectPageLayout</code> should always have one of its sections selected (unless it has 0 sections).
+	 * Note that an argument of <code>null</code> will cause the first visible section be set as <code>selectedSection</code>.
+	 * This is because the <code>sap.uxap.ObjectPageLayout</code> should always have one of its sections selected (unless it has 0 visible sections).
 	 *
-	 * @param {string | sap.uxap.ObjectPageSection}
-	 *            sId the ID of the section that should be selected
-	 *            vSection the section that should be selected
+	 * @param {string | sap.uxap.ObjectPageSection} sId
+	 *            The ID or the section instance that should be selected
 	 *            Note that <code>null</code> or <code>undefined</code> are not valid arguments
 	 * @return {sap.uxap.ObjectPageLayout} Returns <code>this</code> to allow method chaining
 	 * @public
 	 */
-	ObjectPageLayout.prototype.setSelectedSection = function (vSectionBase) {
-		var sSelectedSectionId,
-			vClosestSection,
+	ObjectPageLayout.prototype.setSelectedSection = function (sId) {
+		var vClosestSection,
 			sSectionIdToSet;
 
-		if (vSectionBase instanceof ObjectPageSectionBase) {
-			sSelectedSectionId = vSectionBase.getId();
-		} else if (typeof vSectionBase === "string") {
-			sSelectedSectionId = vSectionBase;
-		}
-
-		if (!sSelectedSectionId) {
-			("section or sectionID expected");
-			return;
-		}
-
-		if (sSelectedSectionId === this.getSelectedSection()){
+		if (sId instanceof ObjectPageSectionBase) {
+			sId = sId.getId();
+		} else if (sId != null && typeof sId !== "string") {
+			jQuery.sap.assert(false, "setSelectedSection(): sId must be a string, an instance of sap.uxap.ObjectPageSection or null");
 			return this;
 		}
 
-		this.scrollToSection(sSelectedSectionId);
+		if (sId === this.getSelectedSection()){
+			return this; // no change
+		}
+
+		if (sId === null) {
+			this.setAssociation("selectedSection", null, true);
+			this._expandHeader(this._bHeaderInTitleArea);
+			this._requestAdjustLayoutAndUxRules(true); // obtains the firstVisible section and scrolls to it if needed
+			return this;
+		}
+
+		this.scrollToSection(sId);
 		//note there was no validation whether oSection was child of ObjectPage/visible/non-empty,
 		//because at the point of calling this setter, the sections setup may not be complete yet
 		//but we still need to save the selectedSection value
-		vClosestSection = ObjectPageSection._getClosestSection(sSelectedSectionId);
+		vClosestSection = ObjectPageSection._getClosestSection(sId);
 		sSectionIdToSet = (vClosestSection instanceof ObjectPageSection) ? vClosestSection.getId() : vClosestSection;
 		return this.setAssociation("selectedSection", sSectionIdToSet, true);
 	};
@@ -1000,6 +1001,10 @@ sap.ui.define([
 		this._$stickyHeaderContent = jQuery.sap.byId(this.getId() + "-stickyHeaderContent");
 		this._$contentContainer = jQuery.sap.byId(this.getId() + "-scroll");
 		this._$sectionsContainer = jQuery.sap.byId(this.getId() + "-sectionsContainer");
+
+		// BCP 1870201875: explicitly set the latest scrollContainer dom ref
+		// (as the scroller obtains the latest scrollContainer dom ref in a LATER hook, which fails in conditions detailed in BCP 1870201875)
+		this._oScroller._$Container = this._$opWrapper;
 
 		this._bDomElementsCached = true;
 	};
@@ -2169,7 +2174,11 @@ sap.ui.define([
 	 */
 	ObjectPageLayout.prototype._onUpdateScreenSize = function (oEvent) {
 		var oTitle = this.getHeaderTitle(),
-			iCurrentWidth = oEvent.size.width;
+			iCurrentWidth = oEvent.size.width,
+			iCurrentHeight = oEvent.size.height,
+			iOldHeight = oEvent.oldSize.height,
+			bHeightChange = (iCurrentHeight !== iOldHeight),
+			sSelectedSectionId;
 
 		if (oEvent.size.height === 0 || oEvent.size.width === 0) {
 			jQuery.sap.log.info("ObjectPageLayout :: not triggering calculations if height or width is 0");
@@ -2205,6 +2214,17 @@ sap.ui.define([
 				this._shiftFooter();
 			}
 
+			sSelectedSectionId = this.getSelectedSection();
+			// if the page was hidden (its iOldHeight === 0)
+			// AND its selectedSection changed *while* the page was hidden
+			// => the page could not update its scrollPosition to match its newly selectedSection
+			// (because changes to scrollTop of a hidden container are ignored by the browser)
+			// => we need to restore the correct scroll position
+			if ((iOldHeight === 0) && bHeightChange && !this._isClosestScrolledSection(sSelectedSectionId)) {
+				this.scrollToSection(sSelectedSectionId, 0);
+				return;
+			}
+
 			this._scrollTo(this._$opWrapper.scrollTop(), 0);
 		});
 
@@ -2225,7 +2245,7 @@ sap.ui.define([
 	 * @private
 	 */
 	ObjectPageLayout.prototype._onScroll = function (oEvent) {
-		var iScrollTop = Math.max(oEvent.target.scrollTop, 0), // top of the visible page
+		var iScrollTop = Math.max(Math.ceil(oEvent.target.scrollTop), 0), // top of the visible page
 			iPageHeight,
 			oHeader = this.getHeaderTitle(),
 			bShouldStick = this._shouldSnapHeaderOnScroll(iScrollTop),
