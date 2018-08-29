@@ -30,7 +30,7 @@ sap.ui.define(['jquery.sap.global', './library', 'sap/uxap/ObjectPageDynamicHead
 		 * @implements sap.uxap.IHeaderTitle
 		 *
 		 * @author SAP SE
-		 * @version 1.52.17
+		 * @version 1.52.18
 		 *
 		 * @constructor
 		 * @public
