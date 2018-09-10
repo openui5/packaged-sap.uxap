@@ -49,7 +49,7 @@ sap.ui.define([
 		 * @implements sap.uxap.IHeaderContent
 		 *
 		 * @author SAP SE
-		 * @version 1.58.1
+		 * @version 1.58.2
 		 *
 		 * @constructor
 		 * @public

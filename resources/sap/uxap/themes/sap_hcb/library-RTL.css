@@ -1647,6 +1647,10 @@ html .sapUiContainer-Medium .sapUxAPObjectPageSubSectionHeader {
 .sapUxAPBlockContainer .sapUiFormResGrid > .sapUiFormTitle {
   padding: 0;
 }
+.sapUxAPBlockContainer .sapUxAPObjectPageSubSectionAlignContent {
+  margin-right: -1rem;
+  margin-left: -1rem;
+}
 .sapUxAPBlockContainerDesktop {
   padding: 1rem 2rem 3rem 2rem;
 }
@@ -1670,6 +1674,9 @@ html .sapUiContainer-Medium .sapUxAPObjectPageSubSectionHeader {
 }
 .sapUxAPBlockContainerPhone .sapUiRespGrid.sapUiRespGridHSpace1 > div {
   margin: 0;
+}
+.sapUxAPBlockContainerPhone .sapUxAPObjectPageSubSectionAlignContent {
+  margin-left: -2rem;
 }
 .sapUxAPObjectPageSubSectionPromoted .sapUxAPBlockContainerPhone {
   padding-top: 1rem;
