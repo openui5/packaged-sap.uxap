@@ -887,9 +887,6 @@ objectPageHeader Content
 .sapUiMedia-Std-Phone .sapUxAPObjectPageHeaderContent .sapUxAPObjectPageHeaderLayoutHiddenS {
   display: none;
 }
-.sapUxAPObjectPageHeaderContentItem .sapUiForm {
-  line-height: 1.5;
-}
 html[data-sap-ui-browser^='ie'] .sapUxAPObjectPageHeaderContent div.sapUxAPObjectPageHeaderContentItem {
   vertical-align: top;
 }
@@ -1061,9 +1058,6 @@ body > .sapUxAPObjectPageLayout,
 }
 .sapUxAPObjectPageScroll {
   position: relative;
-}
-.sapUxAPObjectPageContainer .sapUiForm {
-  line-height: 1.5;
 }
 .sapUxAPObjectPageContainerNoBar > .sapUxAPObjectPageSection:first-child {
   margin-top: 0;
