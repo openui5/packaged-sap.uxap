@@ -723,8 +723,11 @@ html .sapUiContainer-Narrow .sapUxAPObjectPageHeaderIdentifier {
   font-size: 1.375rem;
   padding-left: 1rem;
   display: none;
-  vertical-align: baseline;
+  vertical-align: middle;
   line-height: normal;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
 }
 .sapUxAPObjectPageHeaderStickied .sapUxAPObjectPageHeaderIdentifierTitle {
   display: inline-block;
@@ -1003,7 +1006,8 @@ html[dir=rtl] .sapUxAPObjectPageHeaderMarks .sapMObjStatusMarker .sapUiIcon:firs
 .sapUxAPObjectPageHeaderContent .sapMObjectAttributeActive .sapMObjectAttributeText,
 .sapUxAPObjectPageHeaderContent > .sapUxAPObjectPageHeaderSeparatorContainer .sapMObjectAttributeActive .sapMObjectAttributeText,
 .sapUxAPObjectPageHeaderContent > .sapUxAPObjectPageHeaderWidthContainer .sapMObjectAttributeActive .sapMObjectAttributeText {
-  display: initial;
+  display: inline;
+  position: relative;
   white-space: pre-line;
   word-wrap: break-word;
 }
@@ -1667,6 +1671,9 @@ html .sapUiContainer-Medium .sapUxAPObjectPageSubSectionHeader {
   margin-bottom: 0;
 }
 .sapUxAPBlockContainer .sapUiFormResGrid > .sapUiFormTitle {
+  padding: 0;
+}
+.sapUxAPBlockContainer .sapUiFormResGrid.sapUiFormToolbar > .sapMTB {
   padding: 0;
 }
 .sapUxAPBlockContainerDesktop {

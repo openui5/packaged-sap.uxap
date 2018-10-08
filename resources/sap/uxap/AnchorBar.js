@@ -339,7 +339,8 @@ sap.ui.define([
 					verticalScrolling: true,
 					horizontalScrolling: false,
 					contentWidth: "auto",
-					showArrow: false
+					showArrow: false,
+					afterOpen: this._decorateSubMenuButtons
 				});
 
 				oPopoverState.oCurrentPopover.addStyleClass("sapUxAPAnchorBarPopover");
@@ -356,6 +357,17 @@ sap.ui.define([
 				this._oPressHandlers[oPopoverState.oLastFirstLevelButton.getId()] = fnPressHandler;
 			}
 		}
+	};
+
+	AnchorBar.prototype._decorateSubMenuButtons = function (oEvent) {
+		var aContent = oEvent.getSource().getContent(),
+			iLength = aContent.length;
+
+		aContent.forEach(function (oButton, i) {
+			oButton.$().attr("aria-controls", oButton.data("sectionId"));
+			oButton.$().attr("aria-posinset", i + 1);
+			oButton.$().attr("aria-setsize", iLength);
+		});
 	};
 
 	AnchorBar.prototype._toggleSelectionStyleClass = function(oButton, bAdd) {
