@@ -1647,6 +1647,9 @@ html .sapUiContainer-Medium .sapUxAPObjectPageSubSectionHeader {
 .sapUxAPBlockContainer .sapUiFormResGrid > .sapUiFormTitle {
   padding: 0;
 }
+.sapUxAPBlockContainer .sapUiFormResGrid.sapUiFormToolbar > .sapMTB {
+  padding: 0;
+}
 .sapUxAPBlockContainer .sapUxAPObjectPageSubSectionAlignContent {
   margin-left: -1rem;
   margin-right: -1rem;
