@@ -1396,6 +1396,12 @@ html[data-sap-ui-browser^="ie"][data-sap-ui-os^="win8"] .sapMShell .sapUxAPObjec
   line-height: 2rem;
   margin-bottom: 0;
 }
+.sapUxAPBlockContainer .sapUiFormResGrid > .sapUiFormTitle {
+  padding: 0;
+}
+.sapUxAPBlockContainer .sapUiFormResGrid.sapUiFormToolbar > .sapMTB {
+  padding: 0;
+}
 /* compact size */
 .sapUiSizeCompact .sapUxAPObjectPageSubSectionHeaderTitle {
   height: 2rem;
