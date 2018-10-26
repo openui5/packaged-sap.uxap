@@ -60,7 +60,7 @@ sap.ui.define([
 			"sap.uxap.ModelMapping",
 			"sap.uxap.ObjectPageHeaderLayoutData"
 		],
-		version: "1.58.4",
+		version: "1.58.5",
 		extensions: {
 			flChangeHandlers: {
 				"sap.uxap.ObjectPageHeader": "sap/uxap/flexibility/ObjectPageHeader",
