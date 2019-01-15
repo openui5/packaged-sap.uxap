@@ -1,6 +1,6 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -38,6 +38,10 @@ sap.ui.define([
 
 	// shortcut for sap.uxap.ObjectPageHeaderPictureShape
 	var ObjectPageHeaderPictureShape = library.ObjectPageHeaderPictureShape;
+
+	function isFunction(oObject) {
+		return typeof oObject === "function";
+	}
 
 	/**
 	 * Constructor for a new ObjectPageHeader.
@@ -460,7 +464,7 @@ sap.ui.define([
 			bChanged = sOldTitle !== sNewTitle;
 
 		this._applyActionProperty("objectTitle", Array.prototype.slice.call(arguments));
-		oParent && oParent._updateRootAriaLabel();
+		oParent && isFunction(oParent._updateRootAriaLabel) && oParent._updateRootAriaLabel();
 
 		if (bChanged && this.mEventRegistry["_titleChange"]) {
 			this.fireEvent("_titleChange", {
