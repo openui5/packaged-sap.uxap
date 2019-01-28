@@ -1,6 +1,6 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2018 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -2686,21 +2686,27 @@ sap.ui.define([
 	 * @param {boolean} bStick boolean true for fixing the header, false for keeping it moving
 	 * @private
 	 */
-	ObjectPageLayout.prototype._toggleHeader = function (bStick, bUserInteraction) {
-		var oHeaderTitle = this.getHeaderTitle();
+	ObjectPageLayout.prototype._toggleHeader = function (bShouldStick, bUserInteraction) {
+		var oHeaderTitle;
+
+		if (bShouldStick === this._bStickyAnchorBar) {
+			return;
+		}
+
+		oHeaderTitle = this.getHeaderTitle();
 
 		//switch to stickied
 		if (!this._shouldPreserveHeaderInTitleArea() && !this._bHeaderInTitleArea) {
-			this._toggleHeaderTitle(!bStick, bUserInteraction);
+			this._toggleHeaderTitle(!bShouldStick, bUserInteraction);
 		}
 
-		if (!this._bStickyAnchorBar && bStick) {
+		if (!this._bStickyAnchorBar && bShouldStick) {
 			this._restoreFocusAfter(this._moveAnchorBarToTitleArea);
 			oHeaderTitle && oHeaderTitle.snap();
 			this._bHeaderExpanded = false;
 			this._adjustHeaderHeights();
 			this._updateToggleHeaderVisualIndicators();
-		} else if (this._bStickyAnchorBar && !bStick) {
+		} else if (this._bStickyAnchorBar && !bShouldStick) {
 			this._restoreFocusAfter(this._moveAnchorBarToContentArea);
 			oHeaderTitle && oHeaderTitle.unSnap();
 			this._bHeaderExpanded = true;
