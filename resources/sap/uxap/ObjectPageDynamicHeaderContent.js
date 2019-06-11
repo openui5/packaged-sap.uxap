@@ -30,7 +30,7 @@ sap.ui.define(['jquery.sap.global', './library'],
 		 * @implements sap.uxap.IHeaderContent
 		 *
 		 * @author SAP SE
-		 * @version 1.52.29
+		 * @version 1.52.30
 		 *
 		 * @constructor
 		 * @public
