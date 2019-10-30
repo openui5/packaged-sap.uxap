@@ -53,7 +53,7 @@ sap.ui.define(["jquery.sap.global", "sap/ui/core/Core", "sap/ui/base/DataType", 
 			"sap.uxap.ModelMapping",
 			"sap.uxap.ObjectPageHeaderLayoutData"
 		],
-		version: "1.52.35",
+		version: "1.52.36",
 		extensions: {
 			flChangeHandlers: {
 				"sap.uxap.ObjectPageHeader" : "sap/uxap/flexibility/ObjectPageHeader",
