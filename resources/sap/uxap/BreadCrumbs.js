@@ -1,6 +1,6 @@
 /*!
  * UI development toolkit for HTML5 (OpenUI5)
- * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2021 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -15,7 +15,8 @@ sap.ui.define([
 	"sap/ui/core/Icon",
 	"sap/ui/Device",
 	"./library",
-	"sap/ui/core/InvisibleText"
+	"sap/ui/core/InvisibleText",
+	"jquery.sap.script"
 ], function (Link, Select, Control, ResizeHandler, ItemNavigation, Item, Icon, Device, library, InvisibleText) {
 	"use strict";
 
@@ -221,7 +222,7 @@ sap.ui.define([
 			if (sLinkHref) {
 				sLinkTarget = oControl.getTarget();
 				if (sLinkTarget) {
-					window.open(sLinkHref, sLinkTarget);
+					jQuery.sap.openWindow(sLinkHref, sLinkTarget);
 				} else {
 					window.location.href = sLinkHref;
 				}
